@@ -4,6 +4,11 @@ VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrantIdProxy", "src\HydrantIdProxy\HydrantIdProxy.csproj", "{7847E86E-41F8-4849-BBAD-44A30CE9300B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2BBB9F20-3A03-4CCC-BCD7-C2EA2A9CAE95}"
+	ProjectSection(SolutionItems) = preProject
+		Config.json = Config.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
