@@ -1,5 +1,5 @@
 ﻿ProductName,Code,Vendor,Product Type,IsMultiDomain
-CSC TrustedSecure Premium Certificate,CSC TrustedSecure Premium Certificate,CSCGlobal,DV,No
-CSC TrustedSecure EV Certificate,CSC TrustedSecure EV Certificate,CSCGlobal,DV,No
-CSC TrustedSecure UC Certificate,CSC TrustedSecure UC Certificate,CSCGlobal,DV,Yes
-CSC TrustedSecure Premium Wildcard Certificate,CSC TrustedSecure Premium Wildcard Certificate,CSCGlobal,DV,No
+AutoEnrollment - ECDSA,AutoEnrollment - ECDSA,HydrantId,DV,No
+AutoEnrollment - ECDSA - 7 Day,AutoEnrollment - ECDSA - 7 Day,HydrantId,DV,No
+AutoEnrollment - RSA,AutoEnrollment - RSA,HydrantId,DV,Yes
+AutoEnrollment - RSA - 7 Day,AutoEnrollment - RSA - 7 Day,HydrantId,DV,No
