@@ -27,12 +27,10 @@ namespace Keyfactor.HydrantId.Client
             {
                 ConfigProvider = config;
                 RequestManager=new RequestManager();
-                RestClient = ConfigureRestClient();
             }
         }
 
         private Uri BaseUrl { get; set; }
-        private HttpClient RestClient { get; set; }
         private int PageSize { get; set; } = 100;
         private string ApiId { get; set; }
         private RequestManager RequestManager { get; set; }
@@ -42,7 +40,10 @@ namespace Keyfactor.HydrantId.Client
         public async Task<CertRequestStatus> GetSubmitEnrollmentAsync(
             CertRequestBody registerRequest)
         {
-            using (var resp = await RestClient.PostAsync("/api/v2/csr", new StringContent(
+            var apiEndpoint = $"/api/v2/csr";
+            var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
+
+            using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
                 JsonConvert.SerializeObject(registerRequest), Encoding.ASCII, "application/json")))
             {
                 Logger.Trace(JsonConvert.SerializeObject(registerRequest));
@@ -57,7 +58,10 @@ namespace Keyfactor.HydrantId.Client
 
         public async Task<Certificate> GetSubmitGetCertificateAsync(string certificateId)
         {
-            using (var resp = await RestClient.GetAsync($"/api/v2/tls/certificates/{certificateId}"))
+            var apiEndpoint = $"/api/v2/certificates/{certificateId}";
+            var restClient = ConfigureRestClient("get", BaseUrl + apiEndpoint);
+
+            using (var resp = await restClient.GetAsync(apiEndpoint))
             {
                 resp.EnsureSuccessStatusCode();
                 var getCertificateResponse =
@@ -68,7 +72,10 @@ namespace Keyfactor.HydrantId.Client
 
         public async Task<RevokeCertificateReasonIssuerDn> GetSubmitRevokeCertificateAsync(string uuId)
         {
-            using (var resp = await RestClient.PatchAsync(new Uri($"/dbs/api/v2/tls/revoke/{uuId}"), new StringContent("")))
+            var apiEndpoint = $"/api/v2/certificates/{uuId}";
+            var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
+
+            using (var resp = await restClient.PatchAsync(new Uri(BaseUrl + apiEndpoint), new StringContent("")))
             {
                 var jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
                 var getRevokeResponse =
@@ -92,7 +99,11 @@ namespace Keyfactor.HydrantId.Client
                     pageCounter++;
                     var queryOrderRequest = RequestManager.GetCertificatesListRequest(pageCounter, PageSize);
                     var batchItemsProcessed = 0;
-                    using (var resp = await RestClient.PostAsync("/dbs/api/v2/tls/certificates",new StringContent(
+
+                    var apiEndpoint = "/api/v2/certificates";
+                    var restClient = ConfigureRestClient("post",BaseUrl + apiEndpoint);
+
+                    using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
                         JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json")))
                     {
                         if (!resp.IsSuccessStatusCode)
@@ -167,7 +178,7 @@ namespace Keyfactor.HydrantId.Client
         }
 
         // ReSharper disable once InconsistentNaming
-        private HttpClient ConfigureRestClient()
+        private HttpClient ConfigureRestClient(string method,string url)
         {
 
             BaseUrl = new Uri(ConfigProvider.CAConnectionData[Constants.HydrantIdBaseUrl].ToString());
@@ -190,7 +201,7 @@ namespace Keyfactor.HydrantId.Client
             var nOnce = Convert.ToBase64String(byteArray);
             var date = DateTime.Now;
             var ts = Hawk.ConvertToUnixTimestamp(date);
-            var mac = Hawk.CalculateMac(BaseUrl.Host + ":" + BaseUrl.Port, "post", BaseUrl, "", ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
+            var mac = Hawk.CalculateMac(BaseUrl.Host + ":" + BaseUrl.Port, method, new Uri(url), "", ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
             var authorization =
                 $"id=\"{ApiId}\", ts=\"{ts}\", nonce=\"{nOnce}\", mac=\"{mac}\"";
 

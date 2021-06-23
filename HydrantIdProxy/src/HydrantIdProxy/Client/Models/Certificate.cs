@@ -1,74 +1,73 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class Certificate : ICertificate
     {
-  
-        [DataMember(Name = "id", EmitDefaultValue = false)]
-        public Guid? Id { get; }
 
-        [DataMember(Name = "serial", EmitDefaultValue = false)]
-        public string Serial { get; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? Id { get; set; }
 
-        [DataMember(Name = "commonName", EmitDefaultValue = false)]
-        public string CommonName { get; }
+        [JsonProperty("serial", NullValueHandling = NullValueHandling.Ignore)]
+        public string Serial { get; set; }
 
-        [DataMember(Name = "subjectDN", EmitDefaultValue = false)]
-        public string SubjectDn { get; }
+        [JsonProperty("commonName", NullValueHandling = NullValueHandling.Ignore)]
+        public string CommonName { get; set; }
 
-        [DataMember(Name = "issuerDN", EmitDefaultValue = false)]
-        public string IssuerDn { get; }
+        [JsonProperty("subjectDN", NullValueHandling = NullValueHandling.Ignore)]
+        public string SubjectDn { get; set; }
 
-        [DataMember(Name = "notBefore", EmitDefaultValue = false)]
-        public DateTime? NotBefore { get; }
+        [JsonProperty("issuerDN", NullValueHandling = NullValueHandling.Ignore)]
+        public string IssuerDn { get; set; }
 
-        [DataMember(Name = "notAfter", EmitDefaultValue = false)]
-        public DateTime? NotAfter { get; }
+        [JsonProperty("notBefore", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? NotBefore { get; set; }
 
-        [DataMember(Name = "signatureAlgorithm", EmitDefaultValue = false)]
-        public string SignatureAlgorithm { get; }
+        [JsonProperty("notAfter", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? NotAfter { get; set; }
 
-        [DataMember(Name = "revocationStatus", EmitDefaultValue = false)]
-        public RevocationStatusEnum RevocationStatus { get; }
+        [JsonProperty("signatureAlgorithm", NullValueHandling = NullValueHandling.Ignore)]
+        public string SignatureAlgorithm { get; set; }
 
-        [DataMember(Name = "revocationReason", EmitDefaultValue = false)]
-        public int? RevocationReason { get; }
+        [JsonProperty("revocationStatus", NullValueHandling = NullValueHandling.Ignore)]
+        public RevocationStatusEnum RevocationStatus { get; set; }
 
-        [DataMember(Name = "revocationDate", EmitDefaultValue = false)]
-        public DateTime? RevocationDate { get; }
+        [JsonProperty("revocationReason", NullValueHandling = NullValueHandling.Ignore)]
+        public int? RevocationReason { get; set; }
 
-        [DataMember(Name = "pem", EmitDefaultValue = false)]
-        public string Pem { get; }
+        [JsonProperty("revocationDate", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? RevocationDate { get; set; }
 
-        [DataMember(Name = "imported", EmitDefaultValue = false)]
-        public bool? Imported { get; }
+        [JsonProperty("pem", NullValueHandling = NullValueHandling.Ignore)]
+        public string Pem { get; set; }
 
-        [DataMember(Name = "createdAt", EmitDefaultValue = false)]
-        public DateTime? CreatedAt { get; }
+        [JsonProperty("imported", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Imported { get; set; }
 
-        [DataMember(Name = "SANs", EmitDefaultValue = false)]
-        public List<string> SaNs { get; }
+        [JsonProperty("createdAt", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? CreatedAt { get; set; }
 
-        [DataMember(Name = "policy", EmitDefaultValue = false)]
-        public CertRequestPolicy Policy { get; }
+        [JsonProperty("SANs", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> SaNs { get; set; }
 
-        [DataMember(Name = "user", EmitDefaultValue = false)]
-        public CertificateUser User { get; }
+        [JsonProperty("policy", NullValueHandling = NullValueHandling.Ignore)]
+        public CertRequestPolicy Policy { get; set; }
 
-        [DataMember(Name = "account", EmitDefaultValue = false)]
-        public CertRequestPolicy Account { get; }
+        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
+        public CertificateUser User { get; set; }
 
-        [DataMember(Name = "organization", EmitDefaultValue = false)]
-        public CertRequestPolicy Organization { get; }
+        [JsonProperty("account", NullValueHandling = NullValueHandling.Ignore)]
+        public CertRequestPolicy Account { get; set; }
 
-        [DataMember(Name = "expiryNotifications", EmitDefaultValue = false)]
-        public List<string> ExpiryNotifications { get; }
+        [JsonProperty("organization", NullValueHandling = NullValueHandling.Ignore)]
+        public CertRequestPolicy Organization { get; set; }
+
+        [JsonProperty("expiryNotifications", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> ExpiryNotifications { get; set; }
 
     }
 }

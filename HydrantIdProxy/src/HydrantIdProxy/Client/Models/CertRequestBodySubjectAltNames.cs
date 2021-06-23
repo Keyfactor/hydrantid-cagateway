@@ -1,23 +1,22 @@
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertRequestBodySubjectAltNames : ICertRequestBodySubjectAltNames
     {
-        [DataMember(Name = "DNSNAME", EmitDefaultValue = false)]
-        public List<string> Dnsname { get; }
+        [JsonProperty("DNSNAME", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Dnsname { get; set; }
 
-        [DataMember(Name = "IPADDRESS", EmitDefaultValue = false)]
-        public List<string> Ipaddress { get; }
+        [JsonProperty("IPADDRESS", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Ipaddress { get; set; }
 
-        [DataMember(Name = "RFC822NAME", EmitDefaultValue = false)]
-        public List<string> Rfc822Name { get; }
+        [JsonProperty("RFC822NAME", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Rfc822Name { get; set; }
 
-        [DataMember(Name = "UPN", EmitDefaultValue = false)]
-        public List<string> Upn { get; }
+        [JsonProperty("UPN", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Upn { get; set; }
 
     }
 }

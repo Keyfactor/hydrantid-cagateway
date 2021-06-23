@@ -1,24 +1,23 @@
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class PolicyDetailsValidity : IPolicyDetailsValidity
     {
-        [DataMember(Name = "years", EmitDefaultValue = false)]
+        [JsonProperty("years", NullValueHandling = NullValueHandling.Ignore)]
         public string Years { get; }
 
-        [DataMember(Name = "months", EmitDefaultValue = false)]
+        [JsonProperty("months", NullValueHandling = NullValueHandling.Ignore)]
         public string Months { get; }
 
-        [DataMember(Name = "days", EmitDefaultValue = false)]
+        [JsonProperty("days", NullValueHandling = NullValueHandling.Ignore)]
         public string Days { get; }
 
-        [DataMember(Name = "required", EmitDefaultValue = false)]
+        [JsonProperty("required", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Required { get; }
 
-        [DataMember(Name = "modifiable", EmitDefaultValue = false)]
+        [JsonProperty("modifiable", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Modifiable { get; }
 
     }

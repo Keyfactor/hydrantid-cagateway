@@ -1,13 +1,12 @@
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class NameObject : INameObject
     {
-        [DataMember(Name = "name", EmitDefaultValue = false)]
-        public string Name { get; }
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
 
     }
 }

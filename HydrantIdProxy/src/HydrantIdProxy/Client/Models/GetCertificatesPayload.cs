@@ -1,55 +1,54 @@
 using System;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertificatesPayload : ICertificatesPayload
     {
 
-        [DataMember(Name = "common_name", EmitDefaultValue = false)]
-        public string CommonName { get;set; }
+        [JsonProperty("common_name", NullValueHandling = NullValueHandling.Ignore)]
+        public string CommonName { get; set; }
 
-        [DataMember(Name = "serial", EmitDefaultValue = false)]
-        public string Serial { get;set; }
+        [JsonProperty("serial", NullValueHandling = NullValueHandling.Ignore)]
+        public string Serial { get; set; }
 
-        [DataMember(Name = "not_before", EmitDefaultValue = false)]
-        public DateTime? NotBefore { get;set; }
+        [JsonProperty("not_before", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? NotBefore { get; set; }
 
-        [DataMember(Name = "not_after", EmitDefaultValue = false)]
-        public DateTime? NotAfter { get;set; }
+        [JsonProperty("not_after", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? NotAfter { get; set; }
 
-        [DataMember(Name = "expired", EmitDefaultValue = false)]
-        public bool? Expired { get;set; }
+        [JsonProperty("expired", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Expired { get; set; }
 
-        [DataMember(Name = "status", EmitDefaultValue = false)]
-        public RevocationStatusEnum Status { get;set; }
+        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
+        public RevocationStatusEnum Status { get; set; }
 
-        [DataMember(Name = "account", EmitDefaultValue = false)]
-        public Guid? Account { get;set; }
+        [JsonProperty("account", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? Account { get; set; }
 
-        [DataMember(Name = "organization", EmitDefaultValue = false)]
-        public Guid? Organization { get;set; }
+        [JsonProperty("organization", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? Organization { get; set; }
 
-        [DataMember(Name = "policy", EmitDefaultValue = false)]
-        public Guid? Policy { get;set; }
+        [JsonProperty("policy", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? Policy { get; set; }
 
-        [DataMember(Name = "limit", EmitDefaultValue = false)]
-        public int? Limit { get;set; }
+        [JsonProperty("limit", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Limit { get; set; }
 
-        [DataMember(Name = "offset", EmitDefaultValue = false)]
-        public int? Offset { get;set; }
+        [JsonProperty("offset", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Offset { get; set; }
 
-        [DataMember(Name = "sort_type", EmitDefaultValue = false)]
-        public string SortType { get;set; }
+        [JsonProperty("sort_type", NullValueHandling = NullValueHandling.Ignore)]
+        public string SortType { get; set; }
 
-        [DataMember(Name = "sort_direction", EmitDefaultValue = false)]
-        public SortDirectionEnum SortDirection { get;set; }
+        [JsonProperty("sort_direction", NullValueHandling = NullValueHandling.Ignore)]
+        public SortDirectionEnum SortDirection { get; set; }
 
-        [DataMember(Name = "pem", EmitDefaultValue = false)]
-        public bool? Pem { get;set; }
+        [JsonProperty("pem", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Pem { get; set; }
 
     }
 }

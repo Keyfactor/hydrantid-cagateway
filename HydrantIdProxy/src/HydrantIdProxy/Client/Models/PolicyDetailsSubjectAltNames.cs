@@ -5,7 +5,6 @@ using Newtonsoft.Json.Converters;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class PolicyDetailsSubjectAltNames : IPolicyDetailsSubjectAltNames
     {
         [JsonConverter(typeof(StringEnumConverter))]
@@ -20,20 +19,19 @@ namespace Keyfactor.HydrantId.Client.Models
             [EnumMember(Value = "UPN")] Upn = 4
         }
 
-        [DataMember(Name = "tag", EmitDefaultValue = false)]
+        [JsonProperty("tag", NullValueHandling = NullValueHandling.Ignore)]
         public TagEnum? Tag { get; }
-
-
-        [DataMember(Name = "label", EmitDefaultValue = false)]
+        
+        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
         public string Label { get; }
 
-        [DataMember(Name = "required", EmitDefaultValue = false)]
+        [JsonProperty("required", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Required { get; }
 
-        [DataMember(Name = "modifiable", EmitDefaultValue = false)]
+        [JsonProperty("modifiable", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Modifiable { get; }
 
-        [DataMember(Name = "defaultValue", EmitDefaultValue = false)]
+        [JsonProperty("defaultValue", NullValueHandling = NullValueHandling.Ignore)]
         public string DefaultValue { get; }
 
     }

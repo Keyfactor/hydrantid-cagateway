@@ -1,32 +1,30 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class PolicyDetails : IPolicyDetails
     {
-        [DataMember(Name = "validity", EmitDefaultValue = false)]
+        [JsonProperty("validity", NullValueHandling = NullValueHandling.Ignore)]
         public PolicyDetailsValidity Validity { get; }
 
-        [DataMember(Name = "dnComponents", EmitDefaultValue = false)]
+        [JsonProperty("dnComponents", NullValueHandling = NullValueHandling.Ignore)]
         public List<PolicyDetailsDnComponents> DnComponents { get; }
 
-        [DataMember(Name = "subjectAltNames", EmitDefaultValue = false)]
+        [JsonProperty("subjectAltNames", NullValueHandling = NullValueHandling.Ignore)]
         public List<PolicyDetailsSubjectAltNames> SubjectAltNames { get; }
 
-        [DataMember(Name = "approvalRequired", EmitDefaultValue = false)]
+        [JsonProperty("approvalRequired", NullValueHandling = NullValueHandling.Ignore)]
         public bool? ApprovalRequired { get; }
 
-        [DataMember(Name = "expiryEmails", EmitDefaultValue = false)]
+        [JsonProperty("expiryEmails", NullValueHandling = NullValueHandling.Ignore)]
         public PolicyDetailsExpiryEmails ExpiryEmails { get; }
 
-        [DataMember(Name = "customFields", EmitDefaultValue = false)]
+        [JsonProperty("customFields", NullValueHandling = NullValueHandling.Ignore)]
         public List<PolicyDetailsCustomFields> CustomFields { get; }
 
-        [DataMember(Name = "customExtensions", EmitDefaultValue = false)]
+        [JsonProperty("customExtensions", NullValueHandling = NullValueHandling.Ignore)]
         public List<PolicyDetailsCustomExtensions> CustomExtensions { get; }
 
     }

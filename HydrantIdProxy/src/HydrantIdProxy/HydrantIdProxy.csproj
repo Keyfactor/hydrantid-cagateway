@@ -115,10 +115,6 @@
     <Compile Include="Client\Models\GetCertificatesPayload.cs" />
     <Compile Include="Client\Models\GetCertificatesResponse.cs" />
     <Compile Include="Client\Models\GetCertificatesResponseItem.cs" />
-    <Compile Include="Client\Models\HawkCredential.cs" />
-    <Compile Include="Client\Models\HawkCredentialComment.cs" />
-    <Compile Include="Client\Models\HawkCredentialComments.cs" />
-    <Compile Include="Client\Models\HawkCredentialDeleteResults.cs" />
     <Compile Include="Interfaces\ICertificatesResponse.cs" />
     <Compile Include="Interfaces\ICertificatesResponseItem.cs" />
     <Compile Include="Interfaces\IHawkCredential.cs" />

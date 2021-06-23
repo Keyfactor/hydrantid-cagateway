@@ -1,16 +1,15 @@
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class RevokeCertificateReasonIssuerDn : IRevokeCertificateReasonIssuerDn
     {
-        [DataMember(Name = "reason", EmitDefaultValue = false)]
+        [JsonProperty("reason", NullValueHandling = NullValueHandling.Ignore)]
         public RevocationReasons Reason { get; }
 
-        [DataMember(Name = "issuerDN", EmitDefaultValue = false)]
+        [JsonProperty("issuerDN", NullValueHandling = NullValueHandling.Ignore)]
         public string IssuerDn { get; }
 
     }

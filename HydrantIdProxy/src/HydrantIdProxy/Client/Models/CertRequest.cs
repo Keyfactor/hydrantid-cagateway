@@ -8,7 +8,6 @@ using Newtonsoft.Json.Converters;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertRequest : ICertRequest
     {
         [JsonConverter(typeof(StringEnumConverter))]
@@ -29,34 +28,34 @@ namespace Keyfactor.HydrantId.Client.Models
             [EnumMember(Value = "SOAP")] Soap = 7
         }
 
-        [DataMember(Name = "source", EmitDefaultValue = false)]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public SourceEnum Source { get; }
 
-        [DataMember(Name = "id", EmitDefaultValue = false)]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public Guid? Id { get; }
         
-        [DataMember(Name = "fingerprint", EmitDefaultValue = false)]
+        [JsonProperty("fingerprint", NullValueHandling = NullValueHandling.Ignore)]
         public string Fingerprint { get; }
 
-        [DataMember(Name = "csr", EmitDefaultValue = false)]
+        [JsonProperty("csr", NullValueHandling = NullValueHandling.Ignore)]
         public string Csr { get; }
 
-        [DataMember(Name = "commonName", EmitDefaultValue = false)]
+        [JsonProperty("commonName", NullValueHandling = NullValueHandling.Ignore)]
         public string CommonName { get; }
 
-        [DataMember(Name = "details", EmitDefaultValue = false)]
+        [JsonProperty("details", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, object> Details { get; }
 
-        [DataMember(Name = "issuanceStatus", EmitDefaultValue = false)]
+        [JsonProperty("issuanceStatus", NullValueHandling = NullValueHandling.Ignore)]
         public IssuanceStatus IssuanceStatus { get; }
 
-        [DataMember(Name = "createAt", EmitDefaultValue = false)]
+        [JsonProperty("createAt", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? CreateAt { get; }
 
-        [DataMember(Name = "policy", EmitDefaultValue = false)]
+        [JsonProperty("policy", NullValueHandling = NullValueHandling.Ignore)]
         public CertRequestPolicy Policy { get; }
 
-        [DataMember(Name = "user", EmitDefaultValue = false)]
+        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
         public CertRequestUser User { get; }
 
     }

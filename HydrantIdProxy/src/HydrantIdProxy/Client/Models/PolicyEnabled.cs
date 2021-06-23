@@ -1,24 +1,23 @@
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class PolicyEnabled : IPolicyEnabled
     {
-        [DataMember(Name = "ui", EmitDefaultValue = false)]
+        [JsonProperty("ui", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Ui { get; }
 
-        [DataMember(Name = "rest", EmitDefaultValue = false)]
+        [JsonProperty("rest", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Rest { get; }
 
-        [DataMember(Name = "acme", EmitDefaultValue = false)]
+        [JsonProperty("acme", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Acme { get; }
 
-        [DataMember(Name = "scep", EmitDefaultValue = false)]
+        [JsonProperty("scep", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Scep { get; }
 
-        [DataMember(Name = "est", EmitDefaultValue = false)]
+        [JsonProperty("est", NullValueHandling = NullValueHandling.Ignore)]
         public bool? Est { get; }
     }
 }

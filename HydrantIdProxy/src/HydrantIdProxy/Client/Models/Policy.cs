@@ -1,31 +1,30 @@
 using System;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class Policy : IPolicy
     {
-        [DataMember(Name = "id", EmitDefaultValue = false)]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public Guid? Id { get; }
 
-        [DataMember(Name = "name", EmitDefaultValue = false)]
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; }
 
-        [DataMember(Name = "apiId", EmitDefaultValue = false)]
+        [JsonProperty("apiId", NullValueHandling = NullValueHandling.Ignore)]
         public int? ApiId { get; }
 
-        [DataMember(Name = "details", EmitDefaultValue = false)]
+        [JsonProperty("details", NullValueHandling = NullValueHandling.Ignore)]
         public PolicyDetails Details { get; }
 
-        [DataMember(Name = "enabled", EmitDefaultValue = false)]
+        [JsonProperty("enabled", NullValueHandling = NullValueHandling.Ignore)]
         public PolicyEnabled Enabled { get; }
 
-        [DataMember(Name = "organizationId", EmitDefaultValue = false)]
+        [JsonProperty("organizationId", NullValueHandling = NullValueHandling.Ignore)]
         public Guid? OrganizationId { get; }
 
-        [DataMember(Name = "certificateAuthorityId", EmitDefaultValue = false)]
+        [JsonProperty("certificateAuthorityId", NullValueHandling = NullValueHandling.Ignore)]
         public Guid? CertificateAuthorityId { get; }
 
     }

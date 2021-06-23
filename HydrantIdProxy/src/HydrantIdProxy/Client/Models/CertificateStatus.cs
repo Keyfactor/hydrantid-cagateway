@@ -1,24 +1,23 @@
 using System;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertificateStatus : ICertificateStatus
     {
 
-        [DataMember(Name = "id", EmitDefaultValue = false)]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public Guid? Id { get; }
 
-        [DataMember(Name = "revocationStatus", EmitDefaultValue = false)]
+        [JsonProperty("revocationStatus", NullValueHandling = NullValueHandling.Ignore)]
         public RevocationStatusEnum RevocationStatus { get; }
 
-        [DataMember(Name = "revocationReason", EmitDefaultValue = false)]
+        [JsonProperty("revocationReason", NullValueHandling = NullValueHandling.Ignore)]
         public RevocationReasons RevocationReason { get; }
 
-        [DataMember(Name = "revocationDate", EmitDefaultValue = false)]
+        [JsonProperty("revocationDate", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? RevocationDate { get; }
 
     }

@@ -1,17 +1,16 @@
 using System;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertRequestPolicy : ICertRequestPolicy
     {
-        [DataMember(Name = "id", EmitDefaultValue = false)]
-        public Guid? Id { get; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? Id { get; set; }
 
-        [DataMember(Name = "name", EmitDefaultValue = false)]
-        public string Name { get; }
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
 
     }
 }

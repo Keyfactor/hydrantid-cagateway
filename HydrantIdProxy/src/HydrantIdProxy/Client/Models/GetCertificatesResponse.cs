@@ -1,17 +1,16 @@
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertificatesResponse : ICertificatesResponse
     {
-        [DataMember(Name = "count", EmitDefaultValue = false)]
-        public int? Count { get; }
+        [JsonProperty("count", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Count { get; set; }
 
-        [DataMember(Name = "items", EmitDefaultValue = false)]
-        public List<CertificatesResponseItem> Items { get; }
+        [JsonProperty("items", NullValueHandling = NullValueHandling.Ignore)]
+        public List<CertificatesResponseItem> Items { get; set; }
 
     }
 }

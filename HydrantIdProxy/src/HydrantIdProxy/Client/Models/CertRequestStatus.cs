@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
@@ -9,7 +8,6 @@ using Newtonsoft.Json.Converters;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertRequestStatus : ICertRequestStatus
     {
         [JsonConverter(typeof(StringEnumConverter))]
@@ -26,19 +24,19 @@ namespace Keyfactor.HydrantId.Client.Models
             [EnumMember(Value = "FAILED")] Failed = 5
         }
 
-        [DataMember(Name = "revocationStatus", EmitDefaultValue = false)]
-        public RevocationStatusEnum? RevocationStatus { get; }
+        [JsonProperty("revocationStatus", NullValueHandling = NullValueHandling.Ignore)]
+        public RevocationStatusEnum? RevocationStatus { get; set; }
 
-        [DataMember(Name = "id", EmitDefaultValue = false)]
-        public string Id { get; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public string Id { get; set; }
 
-        [DataMember(Name = "issuanceStatus", EmitDefaultValue = false)]
-        public IssuanceStatus IssuanceStatus { get; }
+        [JsonProperty("issuanceStatus", NullValueHandling = NullValueHandling.Ignore)]
+        public IssuanceStatus IssuanceStatus { get; set; }
 
-        [DataMember(Name = "issuanceStatusDetails", EmitDefaultValue = false)]
-        public Dictionary<string, object> IssuanceStatusDetails { get; }
+        [JsonProperty("issuanceStatusDetails", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, object> IssuanceStatusDetails { get; set; }
 
-        [DataMember(Name = "certificateId", EmitDefaultValue = false)]
-        public Guid? CertificateId { get; }
+        [JsonProperty("certificateId", NullValueHandling = NullValueHandling.Ignore)]
+        public Guid? CertificateId { get; set; }
     }
 }

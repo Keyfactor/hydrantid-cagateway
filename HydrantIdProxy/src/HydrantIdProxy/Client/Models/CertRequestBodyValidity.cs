@@ -1,19 +1,18 @@
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertRequestBodyValidity : ICertRequestBodyValidity
     {
-        [DataMember(Name = "years", EmitDefaultValue = false)]
-        public int? Years { get; }
+        [JsonProperty("years", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Years { get; set; }
 
-        [DataMember(Name = "months", EmitDefaultValue = false)]
-        public int? Months { get; }
+        [JsonProperty("months", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Months { get; set; }
 
-        [DataMember(Name = "days", EmitDefaultValue = false)]
-        public int? Days { get; }
+        [JsonProperty("days", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Days { get; set; }
 
     }
 }

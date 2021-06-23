@@ -1,38 +1,37 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
 
 namespace Keyfactor.HydrantId.Client.Models
 {
-    [DataContract]
     public class CertificatesResponseItem : ICertificatesResponseItem
     {
 
-        [DataMember(Name = "id", EmitDefaultValue = false)]
-        public string Id { get; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public string Id { get; set; }
 
-        [DataMember(Name = "commonName", EmitDefaultValue = false)]
-        public string CommonName { get; }
+        [JsonProperty("commonName", NullValueHandling = NullValueHandling.Ignore)]
+        public string CommonName { get; set; }
 
-        [DataMember(Name = "serial", EmitDefaultValue = false)]
-        public string Serial { get; }
+        [JsonProperty("serial", NullValueHandling = NullValueHandling.Ignore)]
+        public string Serial { get; set; }
 
-        [DataMember(Name = "notBefore", EmitDefaultValue = false)]
-        public DateTime? NotBefore { get; }
+        [JsonProperty("notBefore", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? NotBefore { get; set; }
 
-        [DataMember(Name = "notAfter", EmitDefaultValue = false)]
-        public DateTime? NotAfter { get; }
+        [JsonProperty("notAfter", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime? NotAfter { get; set; }
 
-        [DataMember(Name = "revocationStatus", EmitDefaultValue = false)]
-        public RevocationStatusEnum RevocationStatus { get; }
+        [JsonProperty("revocationStatus", NullValueHandling = NullValueHandling.Ignore)]
+        public RevocationStatusEnum RevocationStatus { get; set; }
 
-        [DataMember(Name = "SANs", EmitDefaultValue = false)]
-        public List<string> SaNs { get; }
+        [JsonProperty("SANs", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> SaNs { get; set; }
 
-        [DataMember(Name = "policy", EmitDefaultValue = false)]
-        public NameObject Policy { get; }
+        [JsonProperty("policy", NullValueHandling = NullValueHandling.Ignore)]
+        public NameObject Policy { get; set; }
 
     }
 }
