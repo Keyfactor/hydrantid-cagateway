@@ -27,11 +27,12 @@ namespace Keyfactor.HydrantId.Client
             if (config.CAConnectionData.ContainsKey(Constants.HydrantIdAuthId))
             {
                 ConfigProvider = config;
-                RequestManager=new RequestManager();
+                BaseUrl = ConfigProvider.CAConnectionData[Constants.HydrantIdBaseUrl].ToString();
+                RequestManager =new RequestManager();
             }
         }
 
-        private Uri BaseUrl { get; set; }
+        private string BaseUrl { get; set; }
         private int PageSize { get; set; } = 100;
         private string ApiId { get; set; }
         private RequestManager RequestManager { get; set; }
@@ -45,7 +46,7 @@ namespace Keyfactor.HydrantId.Client
             var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
 
             using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
-                JsonConvert.SerializeObject(registerRequest), Encoding.ASCII, "application/json")))
+                JsonConvert.SerializeObject(registerRequest), Encoding.UTF8, "application/json")))
             {
                 Logger.Trace(JsonConvert.SerializeObject(registerRequest));
                 var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
@@ -113,7 +114,6 @@ namespace Keyfactor.HydrantId.Client
                 var retryCount = 0;
                 do
                 {
-                    pageCounter++;
                     var queryOrderRequest = RequestManager.GetCertificatesListRequest(pageCounter, PageSize);
                     var batchItemsProcessed = 0;
 
@@ -121,7 +121,7 @@ namespace Keyfactor.HydrantId.Client
                     var restClient = ConfigureRestClient("post",BaseUrl + apiEndpoint);
 
                     using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
-                        JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json")))
+                        JsonConvert.SerializeObject(queryOrderRequest), Encoding.UTF8, "application/json")))
                     {
                         if (!resp.IsSuccessStatusCode)
                         {
@@ -143,7 +143,7 @@ namespace Keyfactor.HydrantId.Client
 
                         if (batchResponse != null)
                         {
-                            var batchCount = batchResponse.Count;
+                            var batchCount = batchResponse.Items.Count;
 
                             Logger.Trace($"Processing {batchCount} items in batch");
                             do
@@ -168,6 +168,7 @@ namespace Keyfactor.HydrantId.Client
                     //assume that if we process less records than requested that we have reached the end of the certificate list
                     if (batchItemsProcessed < PageSize)
                         isComplete = true;
+                    pageCounter = pageCounter + PageSize;
                 } while (!isComplete); //page loop
 
                 bc.CompleteAdding();
@@ -197,8 +198,8 @@ namespace Keyfactor.HydrantId.Client
         // ReSharper disable once InconsistentNaming
         private HttpClient ConfigureRestClient(string method,string url)
         {
-
-            BaseUrl = new Uri(ConfigProvider.CAConnectionData[Constants.HydrantIdBaseUrl].ToString());
+            
+            var bUrl = new Uri(BaseUrl);
             ApiId= ConfigProvider.CAConnectionData[Constants.HydrantIdAuthId].ToString();
 
             var credentials = new HawkCredential
@@ -218,12 +219,12 @@ namespace Keyfactor.HydrantId.Client
             var nOnce = Convert.ToBase64String(byteArray);
             var date = DateTime.Now;
             var ts = Hawk.ConvertToUnixTimestamp(date);
-            var mac = Hawk.CalculateMac(BaseUrl.Host + ":" + BaseUrl.Port, method, new Uri(url), "", ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
+            var mac = Hawk.CalculateMac(bUrl.Host + ":" + bUrl.Port, method, new Uri(url), "", ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
             var authorization =
                 $"id=\"{ApiId}\", ts=\"{ts}\", nonce=\"{nOnce}\", mac=\"{mac}\"";
 
             var clientHandler = new WebRequestHandler();
-            var returnClient = new HttpClient(clientHandler, true) { BaseAddress = BaseUrl };
+            var returnClient = new HttpClient(clientHandler, true) { BaseAddress = bUrl };
             returnClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             returnClient.DefaultRequestHeaders.Add("Authorization", "Hawk " + authorization);
             return returnClient;

@@ -92,9 +92,7 @@ namespace Keyfactor.HydrantId
 
                                 var singleCert = HydrantIdClient.GetSubmitGetCertificateAsync(currentResponseItem.Id);
                                 
-                                var fileContent =
-                                    Encoding.ASCII.GetString(
-                                        Convert.FromBase64String(singleCert.Result.Pem ?? string.Empty));
+                                var fileContent =singleCert.Result.Pem ?? string.Empty;
 
                                 Logger.Trace($"Certificate Content: {fileContent}");
 
