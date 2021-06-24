@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -165,7 +166,14 @@ namespace Keyfactor.HydrantId
                     Logger.Trace($"Entering New Enrollment");
                     //If they renewed an expired cert it gets here and this will not be supported
 
-                    var enrollmentRequest = _requestManager.GetEnrollmentRequest(productInfo, csr, san);
+                    var policyListResult =
+                        Task.Run(async () => await HydrantIdClient.GetPolicyList())
+                            .Result;
+
+                    var policyId = policyListResult.Single(p=>p.Name.Equals(productInfo.ProductID));
+
+                    var enrollmentRequest = _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
+                    
                     Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
                     var enrollmentResponse =
                         Task.Run(async () => await HydrantIdClient.GetSubmitEnrollmentAsync(enrollmentRequest))

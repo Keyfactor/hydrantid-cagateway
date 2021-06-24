@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
@@ -48,10 +49,26 @@ namespace Keyfactor.HydrantId.Client
             {
                 Logger.Trace(JsonConvert.SerializeObject(registerRequest));
                 var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+
                 var registrationResponse =
                     JsonConvert.DeserializeObject<CertRequestStatus>(await resp.Content.ReadAsStringAsync(),
                         settings);
                 return registrationResponse;
+            }
+        }
+
+        public async Task<List<Policy>> GetPolicyList()
+        {
+            var apiEndpoint = $"/api/v2/policies";
+            var restClient = ConfigureRestClient("get", BaseUrl + apiEndpoint);
+
+            using (var resp = await restClient.GetAsync(apiEndpoint))
+            {
+                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                var policiesResponse =
+                    JsonConvert.DeserializeObject<List<Policy>>(await resp.Content.ReadAsStringAsync(),
+                        settings);
+                return policiesResponse;
             }
         }
 

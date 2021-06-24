@@ -44,11 +44,11 @@ namespace Keyfactor.HydrantId
             };
         }
 
-        public CertRequestBody GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr, Dictionary<string, string[]> san)
+        public CertRequestBody GetEnrollmentRequest(Guid? policyId,EnrollmentProductInfo productInfo, string csr, Dictionary<string, string[]> san)
         {
             return new CertRequestBody
             {
-                Policy = new Guid(productInfo.ProductID),
+                Policy = policyId,
                 Csr = csr,
                 DnComponents = GetDnComponentsRequest(csr),
                 SubjectAltNames = GetSansRequest(san)
