@@ -1,0 +1,38 @@
+{
+  "Id": 999999,
+  "CommonName": "AutoEnrollment - RSA - 7 Day",
+  "TemplateName": "AutoEnrollment - RSA - 7 Day",
+  "Oid": "Replace OID",
+  "KeySize": "2048",
+  "KeyType": "RSA",
+  "ForestRoot": "keyfactor.lab",
+  "FriendlyName": "Replace Friendly Name",
+  "KeyRetention": "AfterExpiration",
+  "KeyRetentionDays": 55,
+  "KeyArchival": false,
+  "EnrollmentFields": [
+    {
+      "Id": 2222961,
+      "Name": "Validity Period",
+      "Options": [
+        "Years",
+		"Days",
+		"Months"
+      ],
+      "DataType": 2
+    },
+    {
+      "Id": 2222962,
+      "Name": "Validity Units",
+      "Options": [
+        ""
+      ],
+      "DataType": 1
+    }
+  ],
+  "AllowedEnrollmentTypes": 7,
+  "TemplateRegexes": [],
+  "UseAllowedRequesters": false,
+  "AllowedRequesters": [],
+  "DisplayName": "Replace Display Name"
+}

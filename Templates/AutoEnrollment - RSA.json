@@ -1,7 +1,7 @@
 {
   "Id": 999999,
-  "CommonName": "CscGlobal-EV",
-  "TemplateName": "CscGlobal-EV",
+  "CommonName": "AutoEnrollment - RSA",
+  "TemplateName": "AutoEnrollment - RSA",
   "Oid": "Replace OID",
   "KeySize": "2048",
   "KeyType": "RSA",
@@ -11,6 +11,25 @@
   "KeyRetentionDays": 55,
   "KeyArchival": false,
   "EnrollmentFields": [
+    {
+      "Id": 2222971,
+      "Name": "Validity Period",
+      "Options": [
+        "Years",
+		"Days",
+		"Months"
+      ],
+      "DataType": 2
+    },
+    {
+      "Id": 2222972,
+      "Name": "Validity Units",
+      "Options": [
+        ""
+      ],
+      "DataType": 1
+    }
+  ],
     {
       "Id": 2222340,
       "Name": "Term",

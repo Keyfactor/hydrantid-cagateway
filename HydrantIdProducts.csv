@@ -1,5 +1,3 @@
 ﻿ProductName,Code,Vendor,Product Type,IsMultiDomain
-AutoEnrollment - ECDSA,AutoEnrollment - ECDSA,HydrantId,DV,No
-AutoEnrollment - ECDSA - 7 Day,AutoEnrollment - ECDSA - 7 Day,HydrantId,DV,No
 AutoEnrollment - RSA,AutoEnrollment - RSA,HydrantId,DV,Yes
 AutoEnrollment - RSA - 7 Day,AutoEnrollment - RSA - 7 Day,HydrantId,DV,No
