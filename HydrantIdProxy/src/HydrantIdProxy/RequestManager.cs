@@ -101,7 +101,7 @@ namespace Keyfactor.HydrantId
                     Csr = csr,
                     DnComponents = GetDnComponentsRequest(csr),
                     SubjectAltNames = GetSansRequest(san),
-                    Validity = GetValidity()
+                    Validity = GetValidity(productInfo.ProductParameters["Validity Period"],Convert.ToInt16(productInfo.ProductParameters["Validity Units"]))
                 };
             }
 
@@ -110,26 +110,38 @@ namespace Keyfactor.HydrantId
                 Policy = policyId,
                 Csr = csr,
                 DnComponents = GetDnComponentsRequest(csr),
-                Validity=GetValidity()
+                Validity=GetValidity(productInfo.ProductParameters["Validity Period"], Convert.ToInt16(productInfo.ProductParameters["Validity Units"]))
             };
         }
 
-        private CertRequestBodyValidity GetValidity()
+        private CertRequestBodyValidity GetValidity(string period,int units)
         {
             CertRequestBodyValidity validity = new CertRequestBodyValidity();
-            validity.Years = 1;
+            switch(period)
+            {
+                case "Years":
+                    validity.Years = units;
+                    break;
+                case "Months":
+                    validity.Months = units;
+                    break;
+                case "Days":
+                    validity.Days = units;
+                    break;
+            }
+                        
             return validity;
         }
 
         public CertRequestBodySubjectAltNames GetSansRequest(Dictionary<string, string[]> sans)
         {
             var san = new CertRequestBodySubjectAltNames();
-
+            List<string> dnsNames = new List<string>();
             foreach (var v in sans["dns"])
             {
-                san.Dnsname.Add(v);
+                dnsNames.Add(v.ToString());
             }
-
+            san.Dnsname=dnsNames;
             return san;
         }
 
