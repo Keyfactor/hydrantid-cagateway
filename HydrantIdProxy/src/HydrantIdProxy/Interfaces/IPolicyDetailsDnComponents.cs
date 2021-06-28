@@ -4,11 +4,11 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IPolicyDetailsDnComponents
     {
-        PolicyDetailsDnComponents.TagEnum? Tag { get; }
-        string Label { get; }
-        bool? Required { get; }
-        bool? Modifiable { get; }
-        string DefaultValue { get; }
-        bool? CopyAsFirstSan { get; }
+        PolicyDetailsDnComponents.TagEnum? Tag { get;set; }
+        string Label { get;set; }
+        bool? Required { get;set; }
+        bool? Modifiable { get;set; }
+        string DefaultValue { get;set; }
+        bool? CopyAsFirstSan { get;set; }
     }
 }

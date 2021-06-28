@@ -5,7 +5,7 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertificatesResponse
     {
-        int? Count { get; }
-        List<CertificatesResponseItem> Items { get; }
+        int? Count { get;set; }
+        List<CertificatesResponseItem> Items { get;set; }
     }
 }

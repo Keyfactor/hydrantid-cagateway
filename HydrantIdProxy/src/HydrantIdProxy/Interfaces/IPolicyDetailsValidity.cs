@@ -1,11 +1,13 @@
+using System.Collections.Generic;
+
 namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IPolicyDetailsValidity
     {
-        string Years { get; }
-        string Months { get; }
-        string Days { get; }
-        bool? Required { get; }
-        bool? Modifiable { get; }
+        List<string> Years { get;set; }
+        List<string> Months { get;set; }
+        List<string> Days { get;set; }
+        bool? Required { get;set; }
+        bool? Modifiable { get;set; }
     }
 }

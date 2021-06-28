@@ -7,6 +7,7 @@ using Keyfactor.HydrantId.Client.Models;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
 using Org.BouncyCastle.Pkcs;
+using Keyfactor.HydrantId.Exceptions;
 
 namespace Keyfactor.HydrantId
 {
@@ -35,6 +36,51 @@ namespace Keyfactor.HydrantId
             return Convert.ToInt32(returnStatus);
         }
 
+        public RevocationReasons GetMapRevokeReasons(uint KeyfactorRevokeReason)
+        {
+
+            try
+            {
+                RevocationReasons returnStatus = RevocationReasons.KeyCompromise;
+                if (KeyfactorRevokeReason == 1 | KeyfactorRevokeReason == 3 | KeyfactorRevokeReason == 4 | KeyfactorRevokeReason == 5)
+                {
+
+                    switch (KeyfactorRevokeReason)
+                    {
+                        case 1:
+                            returnStatus = RevocationReasons.KeyCompromise;
+                            break;
+                        case 3:
+                            returnStatus = RevocationReasons.AffiliationChanged;
+                            break;
+                        case 4:
+                            returnStatus = RevocationReasons.Superseded;
+                            break;
+                        case 5:
+                            returnStatus = RevocationReasons.CessationOfOperation;
+                            break;
+                    }
+
+                    return returnStatus;
+                }
+
+                throw new RevokeReasonNotSupportedException("This Revoke Reason is not Supported");
+
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public RevokeCertificateReason GetRevokeRequest(RevocationReasons reason)
+        {
+            return new RevokeCertificateReason
+            {
+                Reason = reason
+            };
+        }
+
         public CertificatesPayload GetCertificatesListRequest(int offset,int limit)
         {
             return new CertificatesPayload
@@ -46,13 +92,33 @@ namespace Keyfactor.HydrantId
 
         public CertRequestBody GetEnrollmentRequest(Guid? policyId,EnrollmentProductInfo productInfo, string csr, Dictionary<string, string[]> san)
         {
+            if(san.ContainsKey("dns"))
+            {
+
+                return new CertRequestBody
+                {
+                    Policy = policyId,
+                    Csr = csr,
+                    DnComponents = GetDnComponentsRequest(csr),
+                    SubjectAltNames = GetSansRequest(san),
+                    Validity = GetValidity()
+                };
+            }
+
             return new CertRequestBody
             {
                 Policy = policyId,
                 Csr = csr,
                 DnComponents = GetDnComponentsRequest(csr),
-                SubjectAltNames = GetSansRequest(san)
+                Validity=GetValidity()
             };
+        }
+
+        private CertRequestBodyValidity GetValidity()
+        {
+            CertRequestBodyValidity validity = new CertRequestBodyValidity();
+            validity.Years = 1;
+            return validity;
         }
 
         public CertRequestBodySubjectAltNames GetSansRequest(Dictionary<string, string[]> sans)
@@ -71,7 +137,7 @@ namespace Keyfactor.HydrantId
             GetEnrollmentResult(
                 ICertRequestStatus enrollmentResult)
         {
-            if (enrollmentResult != null && enrollmentResult.IssuanceStatus.Equals(RevocationStatusEnum.Failed))
+            if (enrollmentResult != null && enrollmentResult.IssuanceStatus.Equals(IssuanceStatus.Failed))
             {
                 return new EnrollmentResult
                 {
@@ -80,7 +146,7 @@ namespace Keyfactor.HydrantId
                 };
             }
 
-            if (enrollmentResult != null && enrollmentResult.IssuanceStatus.Equals(RevocationStatusEnum.InProcess))
+            if (enrollmentResult != null && enrollmentResult.IssuanceStatus.Equals(IssuanceStatus.Pending))
             {
                 return new EnrollmentResult
                 {
@@ -93,6 +159,9 @@ namespace Keyfactor.HydrantId
             return null;
         }
 
+        public static Func<string, string> Pemify = ss =>
+    ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + Pemify(ss.Substring(64));
+
         public CertRequestBodyDnComponents GetDnComponentsRequest(string csr)
         {
             var c = String.Empty;
@@ -102,7 +171,11 @@ namespace Keyfactor.HydrantId
             var st = string.Empty;
             var ou = string.Empty;
 
-            var reader = new Org.BouncyCastle.OpenSsl.PemReader(new StringReader(csr));
+            var cert = "-----BEGIN CERTIFICATE REQUEST-----\r\n";
+            cert = cert + Pemify(csr);
+            cert = cert + "\r\n-----END CERTIFICATE REQUEST-----";
+
+            var reader = new Org.BouncyCastle.OpenSsl.PemReader(new StringReader(cert));
             if (reader.ReadObject() is Pkcs10CertificationRequest req)
             {
                 var info = req.GetCertificationRequestInfo();

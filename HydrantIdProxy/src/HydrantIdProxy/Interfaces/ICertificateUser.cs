@@ -4,8 +4,8 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertificateUser
     {
-        Guid? Id { get; }
-        string Email { get; }
+        Guid? Id { get;set; }
+        string Email { get;set; }
 
     }
 }

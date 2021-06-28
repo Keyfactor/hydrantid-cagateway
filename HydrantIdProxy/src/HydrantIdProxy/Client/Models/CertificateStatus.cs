@@ -9,16 +9,16 @@ namespace Keyfactor.HydrantId.Client.Models
     {
 
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-        public Guid? Id { get; }
+        public Guid? Id { get;set; }
 
         [JsonProperty("revocationStatus", NullValueHandling = NullValueHandling.Ignore)]
-        public RevocationStatusEnum RevocationStatus { get; }
+        public RevocationStatusEnum RevocationStatus { get;set; }
 
         [JsonProperty("revocationReason", NullValueHandling = NullValueHandling.Ignore)]
-        public RevocationReasons RevocationReason { get; }
+        public RevocationReasons RevocationReason { get;set; }
 
         [JsonProperty("revocationDate", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? RevocationDate { get; }
+        public DateTime? RevocationDate { get;set; }
 
     }
 }

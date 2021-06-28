@@ -6,26 +6,23 @@ namespace Keyfactor.HydrantId.Client.Models
 {
     public class PolicyDetails : IPolicyDetails
     {
-        [JsonProperty("validity", NullValueHandling = NullValueHandling.Ignore)]
-        public PolicyDetailsValidity Validity { get; }
-
         [JsonProperty("dnComponents", NullValueHandling = NullValueHandling.Ignore)]
-        public List<PolicyDetailsDnComponents> DnComponents { get; }
+        public List<PolicyDetailsDnComponents> DnComponents { get;set; }
 
         [JsonProperty("subjectAltNames", NullValueHandling = NullValueHandling.Ignore)]
-        public List<PolicyDetailsSubjectAltNames> SubjectAltNames { get; }
+        public List<PolicyDetailsSubjectAltNames> SubjectAltNames { get;set; }
 
         [JsonProperty("approvalRequired", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? ApprovalRequired { get; }
+        public bool? ApprovalRequired { get;set; }
 
         [JsonProperty("expiryEmails", NullValueHandling = NullValueHandling.Ignore)]
-        public PolicyDetailsExpiryEmails ExpiryEmails { get; }
+        public PolicyDetailsExpiryEmails ExpiryEmails { get;set; }
 
         [JsonProperty("customFields", NullValueHandling = NullValueHandling.Ignore)]
-        public List<PolicyDetailsCustomFields> CustomFields { get; }
+        public List<PolicyDetailsCustomFields> CustomFields { get;set; }
 
         [JsonProperty("customExtensions", NullValueHandling = NullValueHandling.Ignore)]
-        public List<PolicyDetailsCustomExtensions> CustomExtensions { get; }
+        public List<PolicyDetailsCustomExtensions> CustomExtensions { get;set; }
 
     }
 }

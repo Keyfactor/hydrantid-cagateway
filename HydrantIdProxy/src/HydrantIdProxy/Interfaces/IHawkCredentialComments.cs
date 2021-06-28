@@ -2,7 +2,7 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IHawkCredentialComments
     {
-        string Comments { get; }
+        string Comments { get;set; }
 
     }
 }

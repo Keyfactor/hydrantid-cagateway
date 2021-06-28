@@ -4,6 +4,6 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IRevokeCertificateReason
     {
-        RevocationReasons Reason { get; }
+        RevocationReasons Reason { get;set; }
     }
 }

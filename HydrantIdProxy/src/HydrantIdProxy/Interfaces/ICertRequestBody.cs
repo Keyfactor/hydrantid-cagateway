@@ -6,15 +6,15 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertRequestBody
     {
-        Guid? Policy { get; }
-        string Csr { get; }
-        CertRequestBodyValidity Validity { get; }
-        CertRequestBodyDnComponents DnComponents { get; }
-        CertRequestBodySubjectAltNames SubjectAltNames { get; }
-        Dictionary<string, object> CustomFields { get; }
-        Dictionary<string, object> CustomExtensions { get; }
-        string Comment { get; }
-        List<string> ExpiryEmails { get; }
-        string ClearRemindersCertificateId { get; }
+        Guid? Policy { get;set; }
+        string Csr { get;set; }
+        CertRequestBodyValidity Validity { get;set; }
+        CertRequestBodyDnComponents DnComponents { get;set; }
+        CertRequestBodySubjectAltNames SubjectAltNames { get;set; }
+        Dictionary<string, object> CustomFields { get;set; }
+        Dictionary<string, object> CustomExtensions { get;set; }
+        string Comment { get;set; }
+        List<string> ExpiryEmails { get;set; }
+        string ClearRemindersCertificateId { get;set; }
     }
 }

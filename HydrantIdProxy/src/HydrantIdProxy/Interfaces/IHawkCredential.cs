@@ -4,12 +4,12 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IHawkCredential
     {
-        string Id { get; }
-        string Key { get; }
-        string Comments { get; }
-        DateTime? LastUsed { get; }
-        DateTime? CreatedAt { get; }
-        DateTime? UpdatedAt { get; }
+        string Id { get;set; }
+        string Key { get;set; }
+        string Comments { get;set; }
+        DateTime? LastUsed { get;set; }
+        DateTime? CreatedAt { get;set; }
+        DateTime? UpdatedAt { get;set; }
 
     }
 }

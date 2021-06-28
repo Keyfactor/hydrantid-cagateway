@@ -5,12 +5,12 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IPolicy
     {
-        Guid? Id { get; }
-        string Name { get; }
-        int? ApiId { get; }
-        PolicyDetails Details { get; }
-        PolicyEnabled Enabled { get; }
-        Guid? OrganizationId { get; }
-        Guid? CertificateAuthorityId { get; }
+        Guid? Id { get;set; }
+        string Name { get;set; }
+        int? ApiId { get;set; }
+        PolicyDetails Details { get;set; }
+        PolicyEnabled Enabled { get;set; }
+        Guid? OrganizationId { get;set; }
+        Guid? CertificateAuthorityId { get;set; }
     }
 }

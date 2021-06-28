@@ -2,10 +2,10 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IPolicyDetailsCustomExtensions
     {
-        string Oid { get; }
-        string Label { get; }
-        bool? Required { get; }
-        bool? Modifiable { get; }
-        string DefaultValue { get; }
+        string Oid { get;set; }
+        string Label { get;set; }
+        bool? Required { get;set; }
+        bool? Modifiable { get;set; }
+        string DefaultValue { get;set; }
     }
 }

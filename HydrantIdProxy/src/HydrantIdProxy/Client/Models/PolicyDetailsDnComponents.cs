@@ -26,22 +26,22 @@ namespace Keyfactor.HydrantId.Client.Models
         }
 
         [JsonProperty("tag", NullValueHandling = NullValueHandling.Ignore)]
-        public TagEnum? Tag { get; }
+        public TagEnum? Tag { get;set; }
 
         [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
-        public string Label { get; }
+        public string Label { get;set; }
 
         [JsonProperty("required", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? Required { get; }
+        public bool? Required { get;set; }
 
         [JsonProperty("modifiable", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? Modifiable { get; }
+        public bool? Modifiable { get;set; }
 
         [JsonProperty("defaultValue", NullValueHandling = NullValueHandling.Ignore)]
-        public string DefaultValue { get; }
+        public string DefaultValue { get;set; }
 
         [JsonProperty("copyAsFirstSAN", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? CopyAsFirstSan { get; }
+        public bool? CopyAsFirstSan { get;set; }
 
 
     }

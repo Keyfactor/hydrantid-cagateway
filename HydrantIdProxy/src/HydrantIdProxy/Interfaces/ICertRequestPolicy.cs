@@ -4,8 +4,8 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertRequestPolicy
     {
-        Guid? Id { get; }
-        string Name { get; }
+        Guid? Id { get;set; }
+        string Name { get;set; }
 
     }
 }

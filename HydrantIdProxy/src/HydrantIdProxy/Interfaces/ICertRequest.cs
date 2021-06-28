@@ -7,16 +7,16 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertRequest
     {
-        CertRequest.SourceEnum Source { get; }
-        Guid? Id { get; }
-        string Fingerprint { get; }
-        string Csr { get; }
-        string CommonName { get; }
-        Dictionary<string, object> Details { get; }
-        IssuanceStatus IssuanceStatus { get; }
-        DateTime? CreateAt { get; }
-        CertRequestPolicy Policy { get; }
-        CertRequestUser User { get; }
+        CertRequest.SourceEnum Source { get;set; }
+        Guid? Id { get;set; }
+        string Fingerprint { get;set; }
+        string Csr { get;set; }
+        string CommonName { get;set; }
+        Dictionary<string, object> Details { get;set; }
+        IssuanceStatus IssuanceStatus { get;set; }
+        DateTime? CreateAt { get;set; }
+        CertRequestPolicy Policy { get;set; }
+        CertRequestUser User { get;set; }
 
     }
 }

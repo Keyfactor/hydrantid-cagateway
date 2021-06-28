@@ -17,6 +17,9 @@ using Keyfactor.HydrantId.Exceptions;
 using Keyfactor.HydrantId.Interfaces;
 using HawkCredential = HawkNet.HawkCredential;
 using Keyfactor.HydrantId.Extensions;
+using Newtonsoft.Json.Serialization;
+using Keyfactor.HydrantId.Client.Models.Enums;
+
 
 namespace Keyfactor.HydrantId.Client
 {
@@ -44,16 +47,19 @@ namespace Keyfactor.HydrantId.Client
         {
             var apiEndpoint = $"/api/v2/csr";
             var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
+            var traceWriter = new MemoryTraceWriter();
 
             using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
                 JsonConvert.SerializeObject(registerRequest), Encoding.UTF8, "application/json")))
             {
                 Logger.Trace(JsonConvert.SerializeObject(registerRequest));
-                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, TraceWriter = traceWriter };
 
                 var registrationResponse =
                     JsonConvert.DeserializeObject<CertRequestStatus>(await resp.Content.ReadAsStringAsync(),
                         settings);
+                Logger.Debug(traceWriter.ToString());
+
                 return registrationResponse;
             }
         }
@@ -63,12 +69,15 @@ namespace Keyfactor.HydrantId.Client
             var apiEndpoint = $"/api/v2/policies";
             var restClient = ConfigureRestClient("get", BaseUrl + apiEndpoint);
 
+            var traceWriter = new MemoryTraceWriter();
+
             using (var resp = await restClient.GetAsync(apiEndpoint))
             {
-                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore,TraceWriter= traceWriter };
                 var policiesResponse =
                     JsonConvert.DeserializeObject<List<Policy>>(await resp.Content.ReadAsStringAsync(),
                         settings);
+                Logger.Debug(traceWriter.ToString());
                 return policiesResponse;
             }
         }
@@ -88,16 +97,18 @@ namespace Keyfactor.HydrantId.Client
             }
         }
 
-        public async Task<RevokeCertificateReasonIssuerDn> GetSubmitRevokeCertificateAsync(string uuId)
+        public async Task<CertificateStatus> GetSubmitRevokeCertificateAsync(string hydrantId,RevocationReasons revokeReason)
         {
-            var apiEndpoint = $"/api/v2/certificates/{uuId}";
-            var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
+            var apiEndpoint = $"/api/v2/certificates/{hydrantId}";
+            var restClient = ConfigureRestClient("patch", BaseUrl + apiEndpoint);
+            var revokeRequest = RequestManager.GetRevokeRequest(revokeReason);
 
-            using (var resp = await restClient.PatchAsync(new Uri(BaseUrl + apiEndpoint), new StringContent("")))
+            using (var resp = await restClient.PatchAsync(new Uri(BaseUrl + apiEndpoint), new StringContent(
+                        JsonConvert.SerializeObject(revokeRequest), Encoding.UTF8, "application/json")))
             {
                 var jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
                 var getRevokeResponse =
-                    JsonConvert.DeserializeObject<RevokeCertificateReasonIssuerDn>(await resp.Content.ReadAsStringAsync(), jsonSerializerSettings);
+                    JsonConvert.DeserializeObject<CertificateStatus>(await resp.Content.ReadAsStringAsync(), jsonSerializerSettings);
                 return getRevokeResponse;
             }
         }

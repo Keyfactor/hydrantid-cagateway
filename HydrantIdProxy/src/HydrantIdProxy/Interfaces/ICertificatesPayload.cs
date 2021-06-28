@@ -5,19 +5,19 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertificatesPayload
     {
-        string CommonName { get; }
-        string Serial { get; }
-        DateTime? NotBefore { get; }
-        DateTime? NotAfter { get; }
-        bool? Expired { get; }
-        RevocationStatusEnum Status { get; }
-        Guid? Account { get; }
-        Guid? Organization { get; }
-        Guid? Policy { get; }
-        int? Limit { get; }
-        int? Offset { get; }
-        string SortType { get; }
-        SortDirectionEnum SortDirection { get; }
-        bool? Pem { get; }
+        string CommonName { get;set; }
+        string Serial { get;set; }
+        DateTime? NotBefore { get;set; }
+        DateTime? NotAfter { get;set; }
+        bool? Expired { get;set; }
+        RevocationStatusEnum Status { get;set; }
+        Guid? Account { get;set; }
+        Guid? Organization { get;set; }
+        Guid? Policy { get;set; }
+        int? Limit { get;set; }
+        int? Offset { get;set; }
+        string SortType { get;set; }
+        SortDirectionEnum SortDirection { get;set; }
+        bool? Pem { get;set; }
     }
 }

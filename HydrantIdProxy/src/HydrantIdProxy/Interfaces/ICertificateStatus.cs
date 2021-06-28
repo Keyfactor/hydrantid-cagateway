@@ -5,10 +5,10 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertificateStatus
     {
-        Guid? Id { get; }
-        RevocationStatusEnum RevocationStatus { get; }
-        RevocationReasons RevocationReason { get; }
-        DateTime? RevocationDate { get; }
+        Guid? Id { get;set; }
+        RevocationStatusEnum RevocationStatus { get;set; }
+        RevocationReasons RevocationReason { get;set; }
+        DateTime? RevocationDate { get;set; }
 
     }
 }

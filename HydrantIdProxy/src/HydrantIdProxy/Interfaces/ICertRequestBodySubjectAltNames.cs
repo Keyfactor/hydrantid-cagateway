@@ -4,10 +4,10 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertRequestBodySubjectAltNames
     {
-        List<string> Dnsname { get; }
-        List<string> Ipaddress { get; }
-        List<string> Rfc822Name { get; }
-        List<string> Upn { get; }
+        List<string> Dnsname { get;set; }
+        List<string> Ipaddress { get;set; }
+        List<string> Rfc822Name { get;set; }
+        List<string> Upn { get;set; }
 
     }
 }

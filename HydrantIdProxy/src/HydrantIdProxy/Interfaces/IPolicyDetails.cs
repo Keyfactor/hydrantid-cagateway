@@ -5,12 +5,11 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface IPolicyDetails
     {
-        PolicyDetailsValidity Validity { get; }
-        List<PolicyDetailsDnComponents> DnComponents { get; }
-        List<PolicyDetailsSubjectAltNames> SubjectAltNames { get; }
-        bool? ApprovalRequired { get; }
-        PolicyDetailsExpiryEmails ExpiryEmails { get; }
-        List<PolicyDetailsCustomFields> CustomFields { get; }
-        List<PolicyDetailsCustomExtensions> CustomExtensions { get; }
+        List<PolicyDetailsDnComponents> DnComponents { get;set; }
+        List<PolicyDetailsSubjectAltNames> SubjectAltNames { get;set; }
+        bool? ApprovalRequired { get;set; }
+        PolicyDetailsExpiryEmails ExpiryEmails { get;set; }
+        List<PolicyDetailsCustomFields> CustomFields { get;set; }
+        List<PolicyDetailsCustomExtensions> CustomExtensions { get;set; }
     }
 }

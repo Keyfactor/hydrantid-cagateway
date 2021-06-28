@@ -29,34 +29,34 @@ namespace Keyfactor.HydrantId.Client.Models
         }
 
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-        public SourceEnum Source { get; }
+        public SourceEnum Source { get;set; }
 
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-        public Guid? Id { get; }
+        public Guid? Id { get;set; }
         
         [JsonProperty("fingerprint", NullValueHandling = NullValueHandling.Ignore)]
-        public string Fingerprint { get; }
+        public string Fingerprint { get;set; }
 
         [JsonProperty("csr", NullValueHandling = NullValueHandling.Ignore)]
-        public string Csr { get; }
+        public string Csr { get;set; }
 
         [JsonProperty("commonName", NullValueHandling = NullValueHandling.Ignore)]
-        public string CommonName { get; }
+        public string CommonName { get;set; }
 
         [JsonProperty("details", NullValueHandling = NullValueHandling.Ignore)]
-        public Dictionary<string, object> Details { get; }
+        public Dictionary<string, object> Details { get;set; }
 
         [JsonProperty("issuanceStatus", NullValueHandling = NullValueHandling.Ignore)]
-        public IssuanceStatus IssuanceStatus { get; }
+        public IssuanceStatus IssuanceStatus { get;set; }
 
         [JsonProperty("createAt", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime? CreateAt { get; }
+        public DateTime? CreateAt { get;set; }
 
         [JsonProperty("policy", NullValueHandling = NullValueHandling.Ignore)]
-        public CertRequestPolicy Policy { get; }
+        public CertRequestPolicy Policy { get;set; }
 
         [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
-        public CertRequestUser User { get; }
+        public CertRequestUser User { get;set; }
 
     }
 }

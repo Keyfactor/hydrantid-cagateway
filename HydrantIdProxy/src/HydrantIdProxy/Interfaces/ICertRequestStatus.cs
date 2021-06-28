@@ -7,11 +7,11 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertRequestStatus
     {
-        CertRequestStatus.RevocationStatusEnum? RevocationStatus { get; }
-        string Id { get; }
-        IssuanceStatus IssuanceStatus { get; }
-        Dictionary<string, object> IssuanceStatusDetails { get; }
-        Guid? CertificateId { get; }
+        CertRequestStatus.RevocationStatusEnum? RevocationStatus { get;set; }
+        string Id { get;set; }
+        IssuanceStatus IssuanceStatus { get;set; }
+        Dictionary<string, object> IssuanceStatusDetails { get;set; }
+        Guid? CertificateId { get;set; }
 
     }
 }

@@ -35,7 +35,10 @@ namespace Keyfactor.HydrantId
             {
                 Logger.Trace("Staring Revoke Method");
 
-                var revokeResponse = Task.Run(async () => await HydrantIdClient.GetSubmitRevokeCertificateAsync(caRequestId))
+                var hydrantId = caRequestId.Substring(0,36);
+                var revokeReason = _requestManager.GetMapRevokeReasons(revocationReason);
+
+                var revokeResponse = Task.Run(async () => await HydrantIdClient.GetSubmitRevokeCertificateAsync(hydrantId,revokeReason))
                         .Result;
 
                 Logger.Trace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
@@ -46,7 +49,7 @@ namespace Keyfactor.HydrantId
             {
                 Logger.Error($"An Error has occurred during the revoke process {e.Message}");
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
-                return Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.FAILED);
+                return -1;
             }
         }
 
@@ -192,7 +195,7 @@ namespace Keyfactor.HydrantId
              var keyfactorCaId = caRequestId.Substring(38); //todo fix to use pipe delimiter
              Logger.Trace($"Keyfactor Ca Id: {keyfactorCaId}");
              var certificateResponse =
-                 Task.Run(async () => await HydrantIdClient.GetSubmitGetCertificateAsync(caRequestId))
+                 Task.Run(async () => await HydrantIdClient.GetSubmitGetCertificateAsync(caRequestId.Substring(0, 36)))
                      .Result;
 
              Logger.Trace($"Single Cert JSON: {JsonConvert.SerializeObject(certificateResponse)}");

@@ -7,25 +7,25 @@ namespace Keyfactor.HydrantId.Interfaces
 {
     public interface ICertificate
     {
-        Guid? Id { get; }
-        string Serial { get; }
-        string CommonName { get; }
-        string SubjectDn { get; }
-        string IssuerDn { get; }
-        DateTime? NotBefore { get; }
-        DateTime? NotAfter { get; }
-        string SignatureAlgorithm { get; }
-        RevocationStatusEnum RevocationStatus { get; }
-        int? RevocationReason { get; }
-        DateTime? RevocationDate { get; }
-        string Pem { get; }
-        bool? Imported { get; }
-        DateTime? CreatedAt { get; }
-        List<string> SaNs { get; }
-        CertRequestPolicy Policy { get; }
-        CertificateUser User { get; }
-        CertRequestPolicy Account { get; }
-        CertRequestPolicy Organization { get; }
-        List<string> ExpiryNotifications { get; }
+        Guid? Id { get;set; }
+        string Serial { get;set; }
+        string CommonName { get;set; }
+        string SubjectDn { get;set; }
+        string IssuerDn { get;set; }
+        DateTime? NotBefore { get;set; }
+        DateTime? NotAfter { get;set; }
+        string SignatureAlgorithm { get;set; }
+        RevocationStatusEnum RevocationStatus { get;set; }
+        int? RevocationReason { get;set; }
+        DateTime? RevocationDate { get;set; }
+        string Pem { get;set; }
+        bool? Imported { get;set; }
+        DateTime? CreatedAt { get;set; }
+        List<string> SaNs { get;set; }
+        CertRequestPolicy Policy { get;set; }
+        CertificateUser User { get;set; }
+        CertRequestPolicy Account { get;set; }
+        CertRequestPolicy Organization { get;set; }
+        List<string> ExpiryNotifications { get;set; }
     }
 }
