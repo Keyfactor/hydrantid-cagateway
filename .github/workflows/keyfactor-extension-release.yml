@@ -3,7 +3,7 @@
 name: Keyfactor Extension - Release
 
 env:
-  project_folder: "HydrantIdProxy"
+  project_folder: \HydrantIdProxy\src\HydrantIdProxy
 
 # Controls when the action will run. 
 on:
