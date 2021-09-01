@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrantIdProxy", "src\HydrantIdProxy\HydrantIdProxy.csproj", "{7847E86E-41F8-4849-BBAD-44A30CE9300B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2BBB9F20-3A03-4CCC-BCD7-C2EA2A9CAE95}"
+	ProjectSection(SolutionItems) = preProject
+		Config.json = Config.json
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7847E86E-41F8-4849-BBAD-44A30CE9300B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7847E86E-41F8-4849-BBAD-44A30CE9300B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7847E86E-41F8-4849-BBAD-44A30CE9300B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7847E86E-41F8-4849-BBAD-44A30CE9300B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CC69852F-4B1A-4A37-BFD5-39CE27479101}
+	EndGlobalSection
+EndGlobal
