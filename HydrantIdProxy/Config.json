@@ -1,0 +1,60 @@
+{
+  "Security": {
+    "KEYFACTOR\\administrator": {
+      "READ": "Allow",
+      "ENROLL": "Allow",
+      "OFFICER": "Allow",
+      "ADMINISTRATOR": "Allow"
+    },
+    "KEYFACTOR\\SVC_AppPool": {
+      "READ": "Allow",
+      "ENROLL": "Allow",
+      "OFFICER": "Allow",
+      "ADMINISTRATOR": "Allow"
+    },
+    "KEYFACTOR\\SVC_TimerService": {
+      "READ": "Allow",
+      "ENROLL": "Allow",
+      "OFFICER": "Allow",
+      "ADMINISTRATOR": "Allow"
+    }
+  },
+  "CAConnection": {
+    "CscGlobalURL": "https://apis-ote.cscglobal.com/dbs/api/v2",
+    "ApiKey": "SomeAPIKey",
+    "BearerToken": "SomeBearerToken",
+    "TemplateSync": "On"
+  },
+  "Templates": {
+    "CSC TrustedSecure Premium Certificate": {
+      "ProductID": "CSC TrustedSecure Premium Certificate",
+      "Parameters": {}
+    },
+    "CSC TrustedSecure EV Certificate": {
+      "ProductID": "CSC TrustedSecure EV Certificate",
+      "Parameters": {}
+    },
+    "CSC TrustedSecure UC Certificate": {
+      "ProductID": "CSC TrustedSecure UC Certificate",
+      "Parameters": {}
+    },
+    "CSC TrustedSecure Premium Wildcard Certificate": {
+      "ProductID": "CSC TrustedSecure Premium Wildcard Certificate",
+      "Parameters": {}
+    }
+  },
+  "CertificateManagers": null,
+  "GatewayRegistration": {
+    "LogicalName": "CscGlobal",
+    "GatewayCertificate": {
+      "StoreName": "CA",
+      "StoreLocation": "LocalMachine",
+      "Thumbprint": "d1eb23a46d17d68fd92564c2f1f1601764d8e349"
+    }
+  },
+  "ServiceSettings": {
+    "ViewIdleMinutes": 1,
+    "FullScanPeriodHours": 1,
+    "PartialScanPeriodMinutes": 1
+  }
+}
