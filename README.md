@@ -3,7 +3,7 @@
 
 HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command
 
-## Production Ready
+## Integration status: Production
 
 <!-- add integration specific information below -->
 *** 
