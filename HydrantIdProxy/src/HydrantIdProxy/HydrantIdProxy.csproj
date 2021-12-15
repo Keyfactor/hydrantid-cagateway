@@ -99,6 +99,9 @@
     <Compile Include="Client\HydrantIdClient.cs" />
     <Compile Include="Client\Models\CertRequestResult.cs" />
     <Compile Include="Client\Models\ErrorReturn.cs" />
+    <Compile Include="Interfaces\IRenewalResponse.cs" />
+    <Compile Include="Interfaces\IRenewalRequest.cs" />
+    <Compile Include="Client\Models\RenewalRequest.cs" />
     <Compile Include="Interfaces\ICertRequestResult.cs" />
     <Compile Include="Interfaces\IErrorReturn.cs" />
     <Compile Include="Constants.cs" />

@@ -13,6 +13,7 @@ using CAProxy.Common;
 using CSS.Common.Logging;
 using CSS.PKI;
 using Keyfactor.HydrantId.Client;
+using Keyfactor.HydrantId.Client.Models;
 using Keyfactor.HydrantId.Interfaces;
 using Newtonsoft.Json;
 
@@ -161,6 +162,7 @@ namespace Keyfactor.HydrantId
             PKIConstants.X509.RequestFormat requestFormat, RequestUtilities.EnrollmentType enrollmentType)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+            CertRequestResult enrollmentResponse=null;
 
             switch (enrollmentType)
             {
@@ -177,16 +179,28 @@ namespace Keyfactor.HydrantId
                     var enrollmentRequest = _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
 
                     Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
-                    var enrollmentResponse =
+                    enrollmentResponse =
                         Task.Run(async () => await HydrantIdClient.GetSubmitEnrollmentAsync(enrollmentRequest))
                             .Result;
                     Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
                     Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
-                    return _requestManager.GetEnrollmentResult(enrollmentResponse);
+                    break;
+
+                case RequestUtilities.EnrollmentType.Renew:
+                    Logger.Trace("Entering Renew...");
+                    var renewalRequest = _requestManager.GetRenewalRequest(csr, false);
+                    Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewalRequest)}");
+                    var certificateId = productInfo.ProductParameters["RequestId"].Substring(0, 36);
+                    enrollmentResponse =
+                        Task.Run(async () => await HydrantIdClient.GetSubmitRenewalAsync(certificateId, renewalRequest))
+                            .Result;
+                    Logger.Trace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
+                    break;
+
             }
 
-            return null;
+            return _requestManager.GetEnrollmentResult(enrollmentResponse);
         }
 
 

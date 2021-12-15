@@ -2,23 +2,23 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CAProxy.AnyGateway.Interfaces;
 using CSS.Common.Logging;
-using Newtonsoft.Json;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using HawkNet;
 using Keyfactor.HydrantId.Client.Models;
-using Keyfactor.HydrantId.Exceptions;
-using Keyfactor.HydrantId.Interfaces;
-using HawkCredential = HawkNet.HawkCredential;
-using Keyfactor.HydrantId.Extensions;
-using Newtonsoft.Json.Serialization;
 using Keyfactor.HydrantId.Client.Models.Enums;
+using Keyfactor.HydrantId.Exceptions;
+using Keyfactor.HydrantId.Extensions;
+using Keyfactor.HydrantId.Interfaces;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Keyfactor.HydrantId.Client
 {
@@ -30,21 +30,21 @@ namespace Keyfactor.HydrantId.Client
             {
                 ConfigProvider = config;
                 BaseUrl = ConfigProvider.CAConnectionData[Constants.HydrantIdBaseUrl].ToString();
-                RequestManager =new RequestManager();
+                RequestManager = new RequestManager();
             }
         }
 
-        private string BaseUrl { get; set; }
-        private int PageSize { get; set; } = 100;
+        private string BaseUrl { get; }
+        private int PageSize { get; } = 100;
         private string ApiId { get; set; }
-        private RequestManager RequestManager { get; set; }
+        private RequestManager RequestManager { get; }
 
-        private ICAConnectorConfigProvider ConfigProvider { get; set; }
+        private ICAConnectorConfigProvider ConfigProvider { get; }
 
         public async Task<CertRequestResult> GetSubmitEnrollmentAsync(
             CertRequestBody registerRequest)
         {
-            var apiEndpoint = $"/api/v2/csr";
+            var apiEndpoint = "/api/v2/csr";
             var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
             var traceWriter = new MemoryTraceWriter();
 
@@ -52,40 +52,72 @@ namespace Keyfactor.HydrantId.Client
                 JsonConvert.SerializeObject(registerRequest), Encoding.UTF8, "application/json")))
             {
                 Logger.Trace(JsonConvert.SerializeObject(registerRequest));
-                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, TraceWriter = traceWriter };
-                var response = (await resp.Content.ReadAsStringAsync());
-                
-                if(resp.StatusCode==System.Net.HttpStatusCode.InternalServerError)
+                var settings = new JsonSerializerSettings
+                    {NullValueHandling = NullValueHandling.Ignore, TraceWriter = traceWriter};
+                var _ = await resp.Content.ReadAsStringAsync();
+
+                if (resp.StatusCode == HttpStatusCode.InternalServerError)
                 {
                     var errorResponse =
                         JsonConvert.DeserializeObject<ErrorReturn>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    var responseReturn = new CertRequestResult();
-                    responseReturn.ErrorReturn = errorResponse;
-                    responseReturn.RequestStatus = null;
+                    var responseReturn = new CertRequestResult {ErrorReturn = errorResponse, RequestStatus = null};
                     return responseReturn;
                 }
 
                 var validResponse =
-    JsonConvert.DeserializeObject<CertRequestStatus>(await resp.Content.ReadAsStringAsync(),
-        settings);
-                var validReturn = new CertRequestResult();
-                validReturn.ErrorReturn = null;
-                validReturn.RequestStatus = validResponse;
+                    JsonConvert.DeserializeObject<CertRequestStatus>(await resp.Content.ReadAsStringAsync(),
+                        settings);
+                var validReturn = new CertRequestResult {ErrorReturn = null, RequestStatus = validResponse};
                 return validReturn;
             }
         }
 
+
+        public async Task<CertRequestResult> GetSubmitRenewalAsync(string certificateId,
+            RenewalRequest renewRequest)
+        {
+            var apiEndpoint = $"/api/v2/certificates/{certificateId}";
+            var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
+            var traceWriter = new MemoryTraceWriter();
+
+            using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
+                JsonConvert.SerializeObject(renewRequest), Encoding.UTF8, "application/json")))
+            {
+                Logger.Trace(JsonConvert.SerializeObject(renewRequest));
+                var settings = new JsonSerializerSettings
+                    { NullValueHandling = NullValueHandling.Ignore, TraceWriter = traceWriter };
+                var _ = await resp.Content.ReadAsStringAsync();
+
+                if (resp.StatusCode == HttpStatusCode.InternalServerError)
+                {
+                    var errorResponse =
+                        JsonConvert.DeserializeObject<ErrorReturn>(await resp.Content.ReadAsStringAsync(),
+                            settings);
+                    var responseReturn = new CertRequestResult { ErrorReturn = errorResponse, RequestStatus = null };
+                    return responseReturn;
+                }
+
+                var validResponse =
+                    JsonConvert.DeserializeObject<CertRequestStatus>(await resp.Content.ReadAsStringAsync(),
+                        settings);
+                var validReturn = new CertRequestResult { ErrorReturn = null, RequestStatus = validResponse };
+                return validReturn;
+            }
+        }
+
+
         public async Task<List<Policy>> GetPolicyList()
         {
-            var apiEndpoint = $"/api/v2/policies";
+            var apiEndpoint = "/api/v2/policies";
             var restClient = ConfigureRestClient("get", BaseUrl + apiEndpoint);
 
             var traceWriter = new MemoryTraceWriter();
 
             using (var resp = await restClient.GetAsync(apiEndpoint))
             {
-                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore,TraceWriter= traceWriter };
+                var settings = new JsonSerializerSettings
+                    {NullValueHandling = NullValueHandling.Ignore, TraceWriter = traceWriter};
                 var policiesResponse =
                     JsonConvert.DeserializeObject<List<Policy>>(await resp.Content.ReadAsStringAsync(),
                         settings);
@@ -109,18 +141,20 @@ namespace Keyfactor.HydrantId.Client
             }
         }
 
-        public async Task<CertificateStatus> GetSubmitRevokeCertificateAsync(string hydrantId,RevocationReasons revokeReason)
+        public async Task<CertificateStatus> GetSubmitRevokeCertificateAsync(string hydrantId,
+            RevocationReasons revokeReason)
         {
             var apiEndpoint = $"/api/v2/certificates/{hydrantId}";
             var restClient = ConfigureRestClient("patch", BaseUrl + apiEndpoint);
             var revokeRequest = RequestManager.GetRevokeRequest(revokeReason);
 
             using (var resp = await restClient.PatchAsync(new Uri(BaseUrl + apiEndpoint), new StringContent(
-                        JsonConvert.SerializeObject(revokeRequest), Encoding.UTF8, "application/json")))
+                JsonConvert.SerializeObject(revokeRequest), Encoding.UTF8, "application/json")))
             {
-                var jsonSerializerSettings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                var jsonSerializerSettings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
                 var getRevokeResponse =
-                    JsonConvert.DeserializeObject<CertificateStatus>(await resp.Content.ReadAsStringAsync(), jsonSerializerSettings);
+                    JsonConvert.DeserializeObject<CertificateStatus>(await resp.Content.ReadAsStringAsync(),
+                        jsonSerializerSettings);
                 return getRevokeResponse;
             }
         }
@@ -141,10 +175,10 @@ namespace Keyfactor.HydrantId.Client
                     var batchItemsProcessed = 0;
 
                     var apiEndpoint = "/api/v2/certificates";
-                    var restClient = ConfigureRestClient("post",BaseUrl + apiEndpoint);
+                    var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
 
                     using (var resp = await restClient.PostAsync(apiEndpoint, new StringContent(
-                        JsonConvert.SerializeObject(queryOrderRequest), Encoding.UTF8, "application/json")))
+                        JsonConvert.SerializeObject(queryOrderRequest), Encoding.UTF8, "application/json"), ct))
                     {
                         if (!resp.IsSuccessStatusCode)
                         {
@@ -219,11 +253,10 @@ namespace Keyfactor.HydrantId.Client
         }
 
         // ReSharper disable once InconsistentNaming
-        private HttpClient ConfigureRestClient(string method,string url)
+        private HttpClient ConfigureRestClient(string method, string url)
         {
-            
             var bUrl = new Uri(BaseUrl);
-            ApiId= ConfigProvider.CAConnectionData[Constants.HydrantIdAuthId].ToString();
+            ApiId = ConfigProvider.CAConnectionData[Constants.HydrantIdAuthId].ToString();
 
             var credentials = new HawkCredential
             {
@@ -242,16 +275,16 @@ namespace Keyfactor.HydrantId.Client
             var nOnce = Convert.ToBase64String(byteArray);
             var date = DateTime.Now;
             var ts = Hawk.ConvertToUnixTimestamp(date);
-            var mac = Hawk.CalculateMac(bUrl.Host + ":" + bUrl.Port, method, new Uri(url), "", ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
+            var mac = Hawk.CalculateMac(bUrl.Host + ":" + bUrl.Port, method, new Uri(url), "",
+                ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
             var authorization =
                 $"id=\"{ApiId}\", ts=\"{ts}\", nonce=\"{nOnce}\", mac=\"{mac}\"";
 
             var clientHandler = new WebRequestHandler();
-            var returnClient = new HttpClient(clientHandler, true) { BaseAddress = bUrl };
+            var returnClient = new HttpClient(clientHandler, true) {BaseAddress = bUrl};
             returnClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             returnClient.DefaultRequestHeaders.Add("Authorization", "Hawk " + authorization);
             return returnClient;
         }
-
     }
 }

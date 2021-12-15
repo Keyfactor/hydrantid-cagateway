@@ -114,6 +114,15 @@ namespace Keyfactor.HydrantId
             };
         }
 
+        public RenewalRequest GetRenewalRequest(string csr, bool reuseCsr)
+        {
+            return new RenewalRequest
+            {
+                Csr = csr,
+                ReuseCsr = reuseCsr
+            };
+        }
+
         private CertRequestBodyValidity GetValidity(string period,int units)
         {
             CertRequestBodyValidity validity = new CertRequestBodyValidity();
