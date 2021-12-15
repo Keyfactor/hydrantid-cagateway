@@ -77,7 +77,7 @@ namespace Keyfactor.HydrantId.Client
         public async Task<CertRequestResult> GetSubmitRenewalAsync(string certificateId,
             RenewalRequest renewRequest)
         {
-            var apiEndpoint = $"/api/v2/certificates/{certificateId}";
+            var apiEndpoint = $"/api/v2/certificates/{certificateId}/renew";
             var restClient = ConfigureRestClient("post", BaseUrl + apiEndpoint);
             var traceWriter = new MemoryTraceWriter();
 
