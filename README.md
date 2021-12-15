@@ -1,3 +1,10 @@
+# HydrantId
+## Ca-gateway
+
+HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command
+
+## Integration status: Production
+
 <!-- add integration specific information below -->
 *** 
 # Getting Started
@@ -5,7 +12,7 @@
 To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the HydrantId plugin. This integration was tested with Keyfactor 8.7.0.0.
 To install the gateway follow these instructions.
 
-1) Gateway Server - run the installation .msi located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/AnyGateway-21.3.2.msi)
+1) Gateway Server - run the installation .msi obtained from Keyfactor
 
 2) Gateway Server - If you have the rights to install the database (usually in a Non SQL PAAS Environment) Using Powershell, run the following command to create the gateway database.
 
@@ -86,9 +93,9 @@ the CA.  Without the imported configuration, the service will fail to start.
    ```
    <alias alias="CAConnector" type="Keyfactor.HydrantId.HydrantIdProxy, HydrantIdProxy"/>
    ```
-2) Gateway Server - Install the Root HydrantId Certificate that was received from HydrantId [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/HydrantIdRootCert.cer)
+2) Gateway Server - Install the Root HydrantId Certificate that was received from HydrantId
 
-3) Gateway Server - Install the Intermediate HydrantId Certificate that was received from HydrantId [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/HydrantIdIntermediate.cer)
+3) Gateway Server - Install the Intermediate HydrantId Certificate that was received from HydrantId
 
 4) Gateway Server - Take the sample Config.json located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/SampleConfig.json) and make the following modifications
 
