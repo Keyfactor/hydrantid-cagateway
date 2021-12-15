@@ -10,6 +10,7 @@ using CAProxy.AnyGateway;
 using CAProxy.AnyGateway.Interfaces;
 using CAProxy.AnyGateway.Models;
 using CAProxy.Common;
+using CSS.Common;
 using CSS.Common.Logging;
 using CSS.PKI;
 using Keyfactor.HydrantId.Client;
@@ -191,7 +192,17 @@ namespace Keyfactor.HydrantId
                     Logger.Trace("Entering Renew...");
                     var renewalRequest = _requestManager.GetRenewalRequest(csr, false);
                     Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewalRequest)}");
-                    var certificateId = productInfo.ProductParameters["RequestId"].Substring(0, 36);
+                    var sn = productInfo.ProductParameters["PriorCertSN"];
+                    Logger.Trace($"Prior Cert Serial Number= {sn}");
+                    var priorCert = certificateDataReader.GetCertificateRecord(
+                        DataConversion.HexToBytes(sn));
+
+                    var uUId = priorCert.CARequestID; //uUId is a GUID
+
+                    Logger.Trace($"Hydrant Certificate Id Plus Serial #= {uUId}");
+
+                    Logger.Trace($"Reissue CA RequestId: {uUId}");
+                    var certificateId = uUId.Substring(0, 36);
                     enrollmentResponse =
                         Task.Run(async () => await HydrantIdClient.GetSubmitRenewalAsync(certificateId, renewalRequest))
                             .Result;
