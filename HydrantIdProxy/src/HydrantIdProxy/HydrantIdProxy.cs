@@ -163,52 +163,81 @@ namespace Keyfactor.HydrantId
             PKIConstants.X509.RequestFormat requestFormat, RequestUtilities.EnrollmentType enrollmentType)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
-            CertRequestResult enrollmentResponse=null;
+            CertRequestResult enrollmentResponse = null;
 
             switch (enrollmentType)
             {
                 case RequestUtilities.EnrollmentType.New:
+                case RequestUtilities.EnrollmentType.Reissue:
                     Logger.Trace("Entering New Enrollment");
-                    //If they renewed an expired cert it gets here and this will not be supported
+                    //One click renewal will  not work because we need to send in Validity Information to the request
+                    if (productInfo.ProductParameters.ContainsKey("Validity Period"))
+                    {
+                        var policyListResult =
+                            Task.Run(async () => await HydrantIdClient.GetPolicyList())
+                                .Result;
 
-                    var policyListResult =
-                        Task.Run(async () => await HydrantIdClient.GetPolicyList())
-                            .Result;
+                        var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
 
-                    var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
+                        var enrollmentRequest =
+                            _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
 
-                    var enrollmentRequest = _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
+                        Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
+                        enrollmentResponse =
+                            Task.Run(async () => await HydrantIdClient.GetSubmitEnrollmentAsync(enrollmentRequest))
+                                .Result;
+                        Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
-                    Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
-                    enrollmentResponse =
-                        Task.Run(async () => await HydrantIdClient.GetSubmitEnrollmentAsync(enrollmentRequest))
-                            .Result;
-                    Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
+                        Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+                    }
+                    else
+                    {
+                        return new EnrollmentResult
+                        {
+                            Status = 30, //failure
+                            StatusMessage =
+                                enrollmentType == RequestUtilities.EnrollmentType.Reissue
+                                    ? "One click Renew Is Not Available for this Certificate Type.  Use the configure button instead."
+                                    : "Enrollment Fields for Validity Years and Validity Units Need to be Setup in Keyfactor."
+                        };
+                    }
 
-                    Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
                     break;
 
                 case RequestUtilities.EnrollmentType.Renew:
                     Logger.Trace("Entering Renew...");
-                    var renewalRequest = _requestManager.GetRenewalRequest(csr, false);
-                    Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewalRequest)}");
-                    var sn = productInfo.ProductParameters["PriorCertSN"];
-                    Logger.Trace($"Prior Cert Serial Number= {sn}");
-                    var priorCert = certificateDataReader.GetCertificateRecord(
-                        DataConversion.HexToBytes(sn));
+                    if (productInfo.ProductParameters.ContainsKey("Validity Period"))
+                    {
+                        var renewalRequest = _requestManager.GetRenewalRequest(csr, false);
+                        Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewalRequest)}");
+                        var sn = productInfo.ProductParameters["PriorCertSN"];
+                        Logger.Trace($"Prior Cert Serial Number= {sn}");
+                        var priorCert = certificateDataReader.GetCertificateRecord(
+                            DataConversion.HexToBytes(sn));
 
-                    var uUId = priorCert.CARequestID; //uUId is a GUID
+                        var uUId = priorCert.CARequestID; //uUId is a GUID
 
-                    Logger.Trace($"Hydrant Certificate Id Plus Serial #= {uUId}");
+                        Logger.Trace($"Hydrant Certificate Id Plus Serial #= {uUId}");
 
-                    Logger.Trace($"Reissue CA RequestId: {uUId}");
-                    var certificateId = uUId.Substring(0, 36);
-                    enrollmentResponse =
-                        Task.Run(async () => await HydrantIdClient.GetSubmitRenewalAsync(certificateId, renewalRequest))
-                            .Result;
-                    Logger.Trace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
+                        Logger.Trace($"Reissue CA RequestId: {uUId}");
+                        var certificateId = uUId.Substring(0, 36);
+                        enrollmentResponse =
+                            Task.Run(async () =>
+                                    await HydrantIdClient.GetSubmitRenewalAsync(certificateId, renewalRequest))
+                                .Result;
+                        Logger.Trace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
+                    }
+                    else
+                    {
+                        return new EnrollmentResult
+                        {
+                            Status = 30, //failure
+                            StatusMessage =
+                                "One click Renew Is Not Available for this Certificate Type.  Use the configure button instead."
+
+                        };
+                    }
                     break;
-
             }
 
             return _requestManager.GetEnrollmentResult(enrollmentResponse);
@@ -243,7 +272,7 @@ namespace Keyfactor.HydrantId
                 return new CAConnectorCertificate
                 {
                     CARequestID = keyfactorCaId,
-                    Status= _requestManager.GetMapReturnStatus(0) //Unknown
+                    Status = _requestManager.GetMapReturnStatus(0) //Unknown
                 };
             }
         }
