@@ -130,7 +130,7 @@ namespace Keyfactor.HydrantId
                                         }
                                         catch (Exception e)
                                         {
-                                            Logger.Trace($"Exception occurred Adding Cert to buffer: {e.Message}");
+                                            Logger.Error($"Exception occurred Adding Cert to buffer: {e.Message} HydrantId: {currentResponseItem.Id} CommonName: {currentResponseItem.CommonName} Serial: {currentResponseItem.Serial}");
                                         }
                                 }
                             }

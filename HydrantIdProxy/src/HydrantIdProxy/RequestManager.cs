@@ -110,8 +110,10 @@ namespace Keyfactor.HydrantId
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
                 return new CertificatesPayload
                 {
-                    Limit= limit,
-                    Offset = offset
+                    Limit = limit,
+                    Offset = offset,
+                    Status = 0,
+                    Expired = true
                 };
             }
             catch (Exception e)
