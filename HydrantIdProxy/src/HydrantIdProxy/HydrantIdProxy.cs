@@ -40,6 +40,8 @@ namespace Keyfactor.HydrantId
 
                 var hydrantId = caRequestId.Substring(0, 36);
                 var revokeReason = _requestManager.GetMapRevokeReasons(revocationReason);
+                
+                Logger.Trace($"Revoke Reason {revokeReason}");
 
                 var revokeResponse = Task.Run(async () =>
                         await HydrantIdClient.GetSubmitRevokeCertificateAsync(hydrantId, revokeReason))
@@ -90,11 +92,13 @@ namespace Keyfactor.HydrantId
                         if (currentResponseItem != null)
                         {
                             var certStatus = _requestManager.GetMapReturnStatus(currentResponseItem.RevocationStatus);
+                            Logger.Trace($"Numeric Status {certStatus}");
 
                             if (certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) ||
                                 certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
                             {
                                 var productId = currentResponseItem.Policy.Name;
+                                Logger.Trace($"Product Id {productId}");
 
                                 var singleCert = HydrantIdClient.GetSubmitGetCertificateAsync(currentResponseItem.Id);
 
@@ -177,7 +181,10 @@ namespace Keyfactor.HydrantId
                             Task.Run(async () => await HydrantIdClient.GetPolicyList())
                                 .Result;
 
+                        Logger.Trace($"Policy Result List: {JsonConvert.SerializeObject(policyListResult)}");
                         var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
+
+                        Logger.Trace($"PolicyId: {JsonConvert.SerializeObject(policyId)}");
 
                         var enrollmentRequest =
                             _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
@@ -279,9 +286,17 @@ namespace Keyfactor.HydrantId
 
         public override void Initialize(ICAConnectorConfigProvider configProvider)
         {
-            Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
-            HydrantIdClient = new HydrantIdClient(configProvider);
-            Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+            try
+            {
+                Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                HydrantIdClient = new HydrantIdClient(configProvider);
+                Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Error Occured in HydrantIdProxy.Initialize: {e.Message}");
+                throw;
+            }
         }
 
         public override void Ping()
