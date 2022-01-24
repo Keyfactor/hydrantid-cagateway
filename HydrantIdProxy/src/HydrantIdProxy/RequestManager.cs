@@ -136,7 +136,7 @@ namespace Keyfactor.HydrantId
                         Csr = csr,
                         DnComponents = GetDnComponentsRequest(csr),
                         SubjectAltNames = GetSansRequest(san),
-                        Validity = GetValidity(productInfo.ProductParameters["Validity Period"],Convert.ToInt16(productInfo.ProductParameters["Validity Units"]))
+                        Validity = GetValidity(productInfo.ProductParameters["ValidityPeriod"],Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
                     };
                 }
 
@@ -145,7 +145,7 @@ namespace Keyfactor.HydrantId
                     Policy = policyId,
                     Csr = csr,
                     DnComponents = GetDnComponentsRequest(csr),
-                    Validity=GetValidity(productInfo.ProductParameters["Validity Period"], Convert.ToInt16(productInfo.ProductParameters["Validity Units"]))
+                    Validity=GetValidity(productInfo.ProductParameters["ValidityPeriod"], Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
                 };
             }
             catch (Exception e)
