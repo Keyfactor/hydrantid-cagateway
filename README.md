@@ -9,7 +9,7 @@ HydrantId operates a PKI as a service platform for customers around the globe.  
 *** 
 # Getting Started
 ## Standard Gateway Installation
-To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the HydrantId plugin. This integration was tested with Keyfactor 8.7.0.0.
+To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the HydrantId plugin. This integration was tested with Keyfactor 9.3.0.0.
 To install the gateway follow these instructions.
 
 1) Gateway Server - run the installation .msi obtained from Keyfactor
@@ -150,7 +150,6 @@ the CA.  Without the imported configuration, the service will fail to start.
 3) Command Server - Run the CreateTemplate.ps1 file and choose option 1 to create the templates in active directory.
    *Note if you get errors the security is likely wrong and you will have to add the security manually according to Keyfactor standards* 
 4) Command Server - Use the Keyfactor Portal to Import the Templates created in Active Directory in step #3 above
-5) Command Server - Run the CreateTemplate.ps1 file and choose option 3 to create all the enrollment fields.  
    *Note You will have to override the default API Questions to the appropriate information.*
 
 ### Certificate Authority Installation
