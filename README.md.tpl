@@ -126,8 +126,8 @@ the CA.  Without the imported configuration, the service will fail to start.
 ```
   "CAConnection": {
     "HydrantIdBaseUrl": "https://acm-stage.hydrantid.com",
-    "AuthId": "a588bff522545a56f6988949ab3db077",
-    "AuthKey": "9cd209929785b9ab6a81d6c57cc7a28b9ce408dfc278f9ce5ff727ec3423912d",
+    "AuthId": "SomeAuthId",
+    "AuthKey": "SomeAuthPassword",
     "TemplateSync": "On"
   }
 ```
