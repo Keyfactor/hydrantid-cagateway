@@ -1,11 +1,16 @@
 # HydrantId
-## Ca-gateway
 
 HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA
 
-## Integration status: Production
+#### Integration status: Production - Ready for use in production environments.
 
-<!-- add integration specific information below -->
+## About the Keyfactor AnyGateway CA Connector
+
+This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
+
+---
+## integration_type = ca-gateway
+
 *** 
 # Getting Started
 ## Standard Gateway Installation
@@ -165,3 +170,6 @@ Set-KeyfactorGatewayConfig -LogicalName "HydrantId" -FilePath [path to json file
 
 ### License
 [Apache](https://apache.org/licenses/LICENSE-2.0)
+
+
+
