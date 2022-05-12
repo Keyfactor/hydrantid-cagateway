@@ -9,7 +9,6 @@ HydrantId operates a PKI as a service platform for customers around the globe.  
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
 
 ---
-## integration_type = ca-gateway
 
 *** 
 # Getting Started
@@ -91,7 +90,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 ### Binary Installation
 
 1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/hydrantid-cagateway/releases/)
-2) Gateway Server - Copy the HydrantIdProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+2) Gateway Server - Copy the HawkNet.dll, They HydrantIdProxy.dll and the HydrantIdProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
 1) Gateway Server - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
@@ -170,6 +169,4 @@ Set-KeyfactorGatewayConfig -LogicalName "HydrantId" -FilePath [path to json file
 
 ### License
 [Apache](https://apache.org/licenses/LICENSE-2.0)
-
-
 
