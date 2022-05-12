@@ -78,7 +78,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 ### Binary Installation
 
 1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/hydrantid-cagateway/releases/)
-2) Gateway Server - Copy the HydrantIdProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+2) Gateway Server - Copy the HawkNet.dll, They HydrantIdProxy.dll and the HydrantIdProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
 1) Gateway Server - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
