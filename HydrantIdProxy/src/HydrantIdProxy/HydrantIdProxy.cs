@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -117,11 +118,11 @@ namespace Keyfactor.HydrantId
                                         try
                                         {
                                             var currentCert = new X509Certificate2(Encoding.ASCII.GetBytes(cert));
+                                            var caReqId = $"{currentResponseItem.Id}-{currentCert.SerialNumber}";
                                             Logger.Trace($"Split Cert Value: {cert}");
                                             blockingBuffer.Add(new CAConnectorCertificate
                                             {
-                                                CARequestID =
-                                                    $"{currentResponseItem.Id}-{currentCert.SerialNumber}",
+                                                CARequestID =$"{currentResponseItem.Id}",
                                                 Certificate = cert,
                                                 SubmissionDate = Convert.ToDateTime(singleCert.Result.CreatedAt),
                                                 Status = certStatus,
@@ -170,6 +171,8 @@ namespace Keyfactor.HydrantId
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
             CertRequestResult enrollmentResponse = null;
 
+            Certificate csrTrackingResponse=null;
+
             switch (enrollmentType)
             {
                 case RequestUtilities.EnrollmentType.New:
@@ -193,6 +196,8 @@ namespace Keyfactor.HydrantId
                         Task.Run(async () => await HydrantIdClient.GetSubmitEnrollmentAsync(enrollmentRequest))
                             .Result;
                     Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
+
+                    csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse.RequestStatus.Id);
 
                     Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
 
@@ -221,18 +226,44 @@ namespace Keyfactor.HydrantId
                     Logger.Trace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
 
+                    csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse.RequestStatus.Id);
+
                     break;
             }
 
-            return _requestManager.GetEnrollmentResult(enrollmentResponse);
+            return _requestManager.GetEnrollmentResult(csrTrackingResponse);
         }
 
+        private Certificate GetCertificateOnTimer(string Id)
+        {
+            //Get the csr tracking response from the tracking Id returned from Enrollment
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            Certificate csrTrackingResponse = null;
+
+            while (stopwatch.Elapsed < TimeSpan.FromSeconds(60) && csrTrackingResponse == null)
+            {
+                try
+                {
+                    csrTrackingResponse =
+                    Task.Run(async () => await HydrantIdClient.GetSubmitGetCertificateByCsrAsync(Id))
+                        .Result;
+                }
+                catch (System.AggregateException e)
+                {
+                    Logger.Trace($"Enrollment Response Not Available Yet, try again {LogHandler.FlattenException(e)}.");
+                }
+                Thread.Sleep(1000);
+            }
+
+            return csrTrackingResponse;
+        }
 
         public override CAConnectorCertificate GetSingleRecord(string caRequestId)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
-            var keyfactorCaId = caRequestId.Substring(0, 36); //todo fix to use pipe delimiter
-            Logger.Trace($"Keyfactor Ca Id: {keyfactorCaId}");
+            Logger.Trace($"Keyfactor Ca Id: {caRequestId}");
             try
             {
                 var certificateResponse =
@@ -244,7 +275,7 @@ namespace Keyfactor.HydrantId
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
                 return new CAConnectorCertificate
                 {
-                    CARequestID = keyfactorCaId,
+                    CARequestID = caRequestId,
                     Certificate = certificateResponse.Pem,
                     ResolutionDate = Convert.ToDateTime(certificateResponse.NotAfter),
                     Status = _requestManager.GetMapReturnStatus(certificateResponse.RevocationStatus),
@@ -255,7 +286,7 @@ namespace Keyfactor.HydrantId
             {
                 return new CAConnectorCertificate
                 {
-                    CARequestID = keyfactorCaId,
+                    CARequestID = caRequestId,
                     Status = _requestManager.GetMapReturnStatus(0) //Unknown
                 };
             }
