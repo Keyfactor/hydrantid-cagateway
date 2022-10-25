@@ -194,6 +194,30 @@ namespace Keyfactor.HydrantId.Client
             }
         }
 
+        public async Task<Certificate> GetSubmitGetCertificateByCsrAsync(string requestTrackingId)
+        {
+            try
+            {
+                Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                var apiEndpoint = $"/api/v2/csr/{requestTrackingId}/certificate";
+                Logger.Trace($"API Url {BaseUrl + apiEndpoint}");
+                var restClient = ConfigureRestClient("get", BaseUrl + apiEndpoint);
+
+                using (var resp = await restClient.GetAsync(apiEndpoint))
+                {
+                    resp.EnsureSuccessStatusCode();
+                    var getCertificateResponse =
+                        JsonConvert.DeserializeObject<Certificate>(await resp.Content.ReadAsStringAsync());
+                    return getCertificateResponse;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Error Occured in HydrantIdClient.GetSubmitGetCertificateAsync: {e.Message}");
+                throw;
+            }
+        }
+
         public async Task<CertificateStatus> GetSubmitRevokeCertificateAsync(string hydrantId,
             RevocationReasons revokeReason)
         {
