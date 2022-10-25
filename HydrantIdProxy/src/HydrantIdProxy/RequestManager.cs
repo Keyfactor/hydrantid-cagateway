@@ -224,28 +224,28 @@ namespace Keyfactor.HydrantId
 
         public EnrollmentResult
             GetEnrollmentResult(
-                ICertRequestResult enrollmentResult)
+                ICertificate enrollmentResult)
         {
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
-                if (enrollmentResult.RequestStatus == null && enrollmentResult.ErrorReturn?.Error.Length>0)
+                if (!enrollmentResult.Id.HasValue)
                 {
                     return new EnrollmentResult
                     {
                         Status = 30, //failure
-                        StatusMessage = $"Enrollment Failed with the following error: {enrollmentResult.ErrorReturn.Error}"
+                        StatusMessage = $"Enrollment Failed with could not get the certificate from the request tracking id"
                     };
                 }
 
-                if (enrollmentResult.RequestStatus != null && enrollmentResult.RequestStatus.IssuanceStatus.Equals(IssuanceStatus.Pending))
+                if (enrollmentResult.Id.HasValue)
                 {
                     return new EnrollmentResult
                     {
                         Status = 13, //success
-                        CARequestID = enrollmentResult.RequestStatus.Id,
+                        CARequestID = enrollmentResult.Id.ToString(),
                         StatusMessage =
-                            $"Order Successfully Created With Order Number {enrollmentResult.RequestStatus.Id}"
+                            $"Order Successfully Created With Order Number {enrollmentResult.Id.ToString()}"
                     };
                 }
 
