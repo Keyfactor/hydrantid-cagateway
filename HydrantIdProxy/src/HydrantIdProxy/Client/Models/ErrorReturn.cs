@@ -5,7 +5,7 @@ namespace Keyfactor.HydrantId.Client.Models
 {
     public class ErrorReturn : IErrorReturn
     {
-        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)] public int Status { get; set; }
-        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)] public string Error { get; set; }
+        [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)] public string Status { get; set; }
+        [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)] public string Error { get; set; }
     }
 }

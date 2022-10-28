@@ -224,11 +224,20 @@ namespace Keyfactor.HydrantId
 
         public EnrollmentResult
             GetEnrollmentResult(
-                ICertificate enrollmentResult)
+                ICertificate enrollmentResult, CAConnectorCertificate cert)
         {
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                if (enrollmentResult==null)
+                {
+                    return new EnrollmentResult
+                    {
+                        Status = 30, //failure
+                        StatusMessage = $"Enrollment Failed with could not get the certificate from the request tracking id"
+                    };
+                }
+
                 if (!enrollmentResult.Id.HasValue)
                 {
                     return new EnrollmentResult
@@ -242,10 +251,10 @@ namespace Keyfactor.HydrantId
                 {
                     return new EnrollmentResult
                     {
-                        Status = 13, //success
+                        Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
                         CARequestID = enrollmentResult.Id.ToString(),
-                        StatusMessage =
-                            $"Order Successfully Created With Order Number {enrollmentResult.Id.ToString()}"
+                        Certificate = cert.Certificate,
+                        StatusMessage = $"Order Successfully Created With Product {cert.ProductID}"
                     };
                 }
 
