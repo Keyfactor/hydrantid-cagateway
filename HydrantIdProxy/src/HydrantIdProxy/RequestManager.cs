@@ -229,6 +229,15 @@ namespace Keyfactor.HydrantId
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                if (enrollmentResult==null)
+                {
+                    return new EnrollmentResult
+                    {
+                        Status = 30, //failure
+                        StatusMessage = $"Enrollment Failed with could not get the certificate from the request tracking id"
+                    };
+                }
+
                 if (!enrollmentResult.Id.HasValue)
                 {
                     return new EnrollmentResult
