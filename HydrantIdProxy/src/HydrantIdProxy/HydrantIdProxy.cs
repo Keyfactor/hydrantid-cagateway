@@ -253,8 +253,8 @@ namespace Keyfactor.HydrantId
             }
 
 
-
-            return _requestManager.GetEnrollmentResult(csrTrackingResponse);
+            var cert = GetSingleRecord(csrTrackingResponse.Id.ToString());
+            return _requestManager.GetEnrollmentResult(csrTrackingResponse,cert);
         }
 
         private Certificate GetCertificateOnTimer(string Id)
