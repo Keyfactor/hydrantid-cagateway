@@ -197,7 +197,19 @@ namespace Keyfactor.HydrantId
                             .Result;
                     Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
-                    csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse.RequestStatus.Id);
+                    if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
+                    {
+                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
+                    }
+                    else
+                    {
+                        return new EnrollmentResult
+                        {
+                            Status = 30, //failure
+                            StatusMessage = $"Enrollment Failed with error {enrollmentResponse?.ErrorReturn?.Error}"
+                        };
+                    }
+
 
                     Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
 
@@ -225,11 +237,22 @@ namespace Keyfactor.HydrantId
                             .Result;
                     Logger.Trace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
-
-                    csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse.RequestStatus.Id);
-
+                    if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
+                    {
+                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
+                    }
+                    else
+                    {
+                        return new EnrollmentResult
+                        {
+                            Status = 30, //failure
+                            StatusMessage = $"Enrollment Failed with error {enrollmentResponse?.ErrorReturn?.Error}"
+                        };
+                    }
                     break;
             }
+
+
 
             return _requestManager.GetEnrollmentResult(csrTrackingResponse);
         }
@@ -242,7 +265,7 @@ namespace Keyfactor.HydrantId
 
             Certificate csrTrackingResponse = null;
 
-            while (stopwatch.Elapsed < TimeSpan.FromSeconds(60) && csrTrackingResponse == null)
+            while (stopwatch.Elapsed < TimeSpan.FromSeconds(30) && csrTrackingResponse == null)
             {
                 try
                 {

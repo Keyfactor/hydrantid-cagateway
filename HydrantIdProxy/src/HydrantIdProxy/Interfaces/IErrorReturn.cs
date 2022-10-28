@@ -2,7 +2,7 @@
 {
     public interface IErrorReturn
     {
-        int Status { get; set; }
+        string Status { get; set; }
         string Error { get; set; }
     }
 }
