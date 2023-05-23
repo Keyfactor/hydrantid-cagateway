@@ -80,7 +80,7 @@ To install the gateway follow these instructions.
    ### Set-KeyfactorGatewayEncryptionCert
    This cmdlet will generate a self-signed certificate used to encrypt the database connection string. It populates a registry value with the serial number of the certificate to be used. The certificate is stored in the LocalMachine Personal Store and the registry key populated is:
 
-   HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\CertSvcProxy\Parameters\EncryptSerialNumber
+   ```HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\CertSvcProxy\Parameters\EncryptSerialNumber```
    No parameters are required to run this cmdlet.
 
 5) Gateway Server - Run the following Powershell Script to Set the Database Connection
@@ -103,14 +103,14 @@ To install the gateway follow these instructions.
 
 
 ## HydrantId AnyGateway Specific Configuration
-It is important to note that importing the  HydrantId configuration into the CA Gateway prior to installing the binaries must be completed. Additionally, the CA Gateway service
+It is important to note that importing the HydrantId configuration into the CA Gateway after installing the binaries must be completed. Additionally, the CA Gateway service
 must be running in order to succesfully import the configuation. When the CA Gateway service starts it will attempt to validate the connection information to 
 the CA.  Without the imported configuration, the service will fail to start.
 
 ### Binary Installation
 
 1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/hydrantid-cagateway/releases/)
-2) Gateway Server - Copy the HawkNet.dll, They HydrantIdProxy.dll and the HydrantIdProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+2) Gateway Server - Copy the HawkNet.dll, The HydrantIdProxy.dll and the HydrantIdProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
 1) Gateway Server - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
@@ -172,9 +172,9 @@ the CA.  Without the imported configuration, the service will fail to start.
 1) Command Server - Copy and Unzip the Template Setup Files located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/TemplateSetup.zip)
 2) Command Server - Change the Security Settings in the CaTemplateUserSecurity.csv file to the appropriate settings for Test or Production
 3) Command Server - Run the CreateTemplate.ps1 file and choose option 1 to create the templates in active directory.
-   *Note if you get errors the security is likely wrong and you will have to add the security manually according to Keyfactor standards* 
+   *Note if you get errors the URL to the API or Security is likely wrong.  Make sure the API calls are run with an administrator user in KF Command* 
 4) Command Server - Use the Keyfactor Portal to Import the Templates created in Active Directory in step #3 above
-   *Note You will have to override the default API Questions to the appropriate information.*
+   *Note there are default values for the API Url, UserId, and Password. You will have to override the default API Questions to the appropriate values.*
 
 ### Certificate Authority Installation
 1) Gateway Server - Start the Keyfactor Gateway Service
