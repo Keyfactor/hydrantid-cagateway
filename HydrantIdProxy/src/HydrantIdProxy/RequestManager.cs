@@ -7,7 +7,7 @@
 // OR CONDITIONS OF ANY KIND, either express or implied. See the License for  
 // thespecific language governing permissions and limitations under the       
 // License. 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using CAProxy.AnyGateway.Models;
@@ -16,9 +16,9 @@ using CSS.PKI;
 using Keyfactor.HydrantId.Client.Models;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
-using Org.BouncyCastle.Pkcs;
 using Keyfactor.HydrantId.Exceptions;
 using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Pkcs;
 
 namespace Keyfactor.HydrantId
 {
