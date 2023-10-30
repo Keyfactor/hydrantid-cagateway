@@ -179,7 +179,7 @@ namespace Keyfactor.HydrantId
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
             CertRequestResult enrollmentResponse = null;
-
+            int timerTries = 0;
             Certificate csrTrackingResponse=null;
 
             switch (enrollmentType)
@@ -208,6 +208,7 @@ namespace Keyfactor.HydrantId
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
+                        timerTries = +1;
                         csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
                     }
                     else
@@ -248,6 +249,7 @@ namespace Keyfactor.HydrantId
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
+                        timerTries = +1;
                         csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
                     }
                     else
@@ -261,6 +263,14 @@ namespace Keyfactor.HydrantId
                     break;
             }
 
+            if(csrTrackingResponse==null && timerTries>0)
+            {
+                return new EnrollmentResult
+                {
+                    Status = 30, //failure
+                    StatusMessage = $"Certificate may still waiting on Hydrant and is not ready for download"
+                };
+            }
 
             var cert = GetSingleRecord(csrTrackingResponse.Id.ToString());
             return _requestManager.GetEnrollmentResult(csrTrackingResponse,cert);
