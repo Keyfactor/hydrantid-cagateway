@@ -163,6 +163,13 @@ REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 wou
 		}
 	}
  ```
+=======
+1) Command Server - Copy and Unzip the Template Setup Files located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/TemplateSetup.zip)
+2) Command Server - Change the Security Settings in the CaTemplateUserSecurity.csv file to the appropriate settings for Test or Production
+3) Command Server - Run the CreateTemplate.ps1 file and choose option 1 to create the templates in active directory.
+   *Note if you get errors the URL to the API or Security is likely wrong.  Make sure the API calls are run with an administrator user in KF Command* 
+4) Command Server - Use the Keyfactor Portal to Import the Templates created in Active Directory in step #3 above
+   *Note there are default values for the API Url, UserId, and Password. You will have to override the default API Questions to the appropriate values.*
 
 ### Certificate Authority Installation
 1) Gateway Server - Start the Keyfactor Gateway Service
