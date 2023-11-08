@@ -51,17 +51,14 @@
     <Reference Include="CommonCAProxy, Version=21.3.2.0, Culture=neutral, PublicKeyToken=0ed89d330114ab09, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Keyfactor.AnyGateway.SDK.21.3.2\lib\net462\CommonCAProxy.dll</HintPath>
     </Reference>
-    <Reference Include="CSS.Common, Version=1.6.0.0, Culture=neutral, PublicKeyToken=0ed89d330114ab09, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CSS.Common.1.6.0\lib\net462\CSS.Common.dll</HintPath>
+    <Reference Include="CSS.Common, Version=1.7.0.0, Culture=neutral, PublicKeyToken=0ed89d330114ab09, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CSS.Common.1.7.0\lib\net462\CSS.Common.dll</HintPath>
     </Reference>
     <Reference Include="CSS.PKI, Version=2.13.0.0, Culture=neutral, PublicKeyToken=0ed89d330114ab09, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CSS.PKI.2.13.0\lib\net462\CSS.PKI.dll</HintPath>
     </Reference>
     <Reference Include="HawkNet, Version=1.4.4.0, Culture=neutral, PublicKeyToken=840f8ba19d15c979, processorArchitecture=MSIL">
       <HintPath>..\..\packages\HawkNet.1.4.4.0\lib\net45\HawkNet.dll</HintPath>
-    </Reference>
-    <Reference Include="JsonSubTypes, Version=1.8.0.0, Culture=neutral, PublicKeyToken=ee75fc290dbc1176, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\JsonSubTypes.1.8.0\lib\net46\JsonSubTypes.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>

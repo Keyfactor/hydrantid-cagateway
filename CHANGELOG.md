@@ -1,3 +1,5 @@
+v1.1.2
+- Recompiled agains the latest gateway and Bouncy Castle Frameworks
 v1.1.1
 - Fixed error handing to match Hydrant new API Structure
 
