@@ -1,12 +1,3 @@
-// Copyright 2023 Keyfactor                                                   
-// Licensed under the Apache License, Version 2.0 (the "License"); you may    
-// not use this file except in compliance with the License.  You may obtain a 
-// copy of the License at http://www.apache.org/licenses/LICENSE-2.0.  Unless 
-// required by applicable law or agreed to in writing, software distributed   
-// under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES   
-// OR CONDITIONS OF ANY KIND, either express or implied. See the License for  
-// thespecific language governing permissions and limitations under the       
-// License. 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -179,8 +170,6 @@ namespace Keyfactor.HydrantId
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
             CertRequestResult enrollmentResponse = null;
-            int timerTries = 0;
-            Certificate csrTrackingResponse=null;
 
             Certificate csrTrackingResponse=null;
 
@@ -210,7 +199,6 @@ namespace Keyfactor.HydrantId
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
-                        timerTries = +1;
                         csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
                     }
                     else
@@ -251,15 +239,19 @@ namespace Keyfactor.HydrantId
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
-                        timerTries = +1;
-            if(csrTrackingResponse==null && timerTries>0)
-            {
-                return new EnrollmentResult
-                {
-                    Status = 30, //failure
-                    StatusMessage = $"Certificate may still waiting on Hydrant and is not ready for download"
-                };
+                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
+                    }
+                    else
+                    {
+                        return new EnrollmentResult
+                        {
+                            Status = 30, //failure
+                            StatusMessage = $"Enrollment Failed with error {enrollmentResponse?.ErrorReturn?.Error}"
+                        };
+                    }
+                    break;
             }
+
 
             var cert = GetSingleRecord(csrTrackingResponse.Id.ToString());
             return _requestManager.GetEnrollmentResult(csrTrackingResponse,cert);
