@@ -10,14 +10,11 @@ HydrantId operates a PKI as a service platform for customers around the globe.  
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
 
 
-
-
 ## Support for HydrantId
 
 HydrantId is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative.
 
 ###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
-
 
 
 ---
@@ -171,6 +168,33 @@ the CA.  Without the imported configuration, the service will fail to start.
 
 ### Template Installation
 
+The Template section will map the CA's products to an AD template.
+* ```ProductID```
+This is the ID of the HydrantId product to map to the specified template. If you don't know the available product IDs in your Hydrant account, put a placeholder value here and run the Set-KeyfactorGatewayConfig cmdlet according to the AnyGateway documentation. The list of available product IDs will be returned.
+* ```ValidityPeriod```
+REQUIRED: The period to use when requesting certs. It could be, Days, Months, Years depending on the Template.
+* ```ValidityUnits```
+REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 would be 1 year, for days 7 would be 7 days.
+
+ ```json
+	"Templates": {
+		"AutoEnrollment - RSA": {
+			"ProductID": "AutoEnrollment - RSA",
+			"Parameters": {
+				"ValidityPeriod": "Years",
+				"ValidityUnits": 1
+			}
+		},
+		"AutoEnrollment - RSA - 7 Day": {
+			"ProductID": "AutoEnrollment - RSA - 7 Day",
+			"Parameters": {
+				"ValidityPeriod": "Days",
+				"ValidityUnits": 7
+			}
+		}
+	}
+ ```
+=======
 1) Command Server - Copy and Unzip the Template Setup Files located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/TemplateSetup.zip)
 2) Command Server - Change the Security Settings in the CaTemplateUserSecurity.csv file to the appropriate settings for Test or Production
 3) Command Server - Run the CreateTemplate.ps1 file and choose option 1 to create the templates in active directory.

@@ -7,7 +7,7 @@
 // OR CONDITIONS OF ANY KIND, either express or implied. See the License for  
 // thespecific language governing permissions and limitations under the       
 // License. 
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -179,6 +179,8 @@ namespace Keyfactor.HydrantId
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
             CertRequestResult enrollmentResponse = null;
+            int timerTries = 0;
+            Certificate csrTrackingResponse=null;
 
             Certificate csrTrackingResponse=null;
 
@@ -208,6 +210,7 @@ namespace Keyfactor.HydrantId
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
+                        timerTries = +1;
                         csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
                     }
                     else
@@ -248,19 +251,15 @@ namespace Keyfactor.HydrantId
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
-                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
-                    }
-                    else
-                    {
-                        return new EnrollmentResult
-                        {
-                            Status = 30, //failure
-                            StatusMessage = $"Enrollment Failed with error {enrollmentResponse?.ErrorReturn?.Error}"
-                        };
-                    }
-                    break;
+                        timerTries = +1;
+            if(csrTrackingResponse==null && timerTries>0)
+            {
+                return new EnrollmentResult
+                {
+                    Status = 30, //failure
+                    StatusMessage = $"Certificate may still waiting on Hydrant and is not ready for download"
+                };
             }
-
 
             var cert = GetSingleRecord(csrTrackingResponse.Id.ToString());
             return _requestManager.GetEnrollmentResult(csrTrackingResponse,cert);
