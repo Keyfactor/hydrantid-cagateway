@@ -10,7 +10,6 @@ HydrantId operates a PKI as a service platform for customers around the globe.  
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
 
 
-=======
 ## Support for HydrantId
 
 HydrantId is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative.
@@ -18,6 +17,19 @@ HydrantId is supported by Keyfactor for Keyfactor customers. If you have a suppo
 ###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
 
 
+---
+
+
+
+
+
+
+
+
+---
+
+
+*** 
 # Getting Started
 ## Standard Gateway Installation
 To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the HydrantId plugin. This integration was tested with Keyfactor 9.3.0.0.
