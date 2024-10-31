@@ -1,6 +1,6 @@
-# HydrantId
+# HID Global Public Key Infrastructure-as-a-Service
 
-HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA
+HID Global operates a PKI as a Service Platform (PKIaaS) for customers around the globe.  The AnyGateway solution for HID PKIaaS is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA
 
 #### Integration status: Production - Ready for use in production environments.
 
@@ -10,9 +10,9 @@ HydrantId operates a PKI as a service platform for customers around the globe.  
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
 
 
-## Support for HydrantId
+## Support for HID Global PKIaaS
 
-HydrantId is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative.
+HID Global PKIaaS is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative.
 
 ###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
 
@@ -101,7 +101,7 @@ To install the gateway follow these instructions.
 ---
 
 
-## HydrantId AnyGateway Specific Configuration
+## HID Global PKIaaS AnyGateway Specific Configuration
 It is important to note that importing the HydrantId configuration into the CA Gateway after installing the binaries must be completed. Additionally, the CA Gateway service
 must be running in order to succesfully import the configuation. When the CA Gateway service starts it will attempt to validate the connection information to 
 the CA.  Without the imported configuration, the service will fail to start.
