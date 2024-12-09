@@ -344,11 +344,15 @@ namespace Keyfactor.HydrantId.Client
             {
                 Logger.Error($"Retries Failed: {retryEx.Message}");
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+                bc.CompleteAdding();
+                throw retryEx;
             }
             catch (HttpRequestException ex)
             {
                 Logger.Error($"HttpRequest Failed: {ex.Message}");
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+                bc.CompleteAdding();
+                throw ex;
             }
 
             Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
