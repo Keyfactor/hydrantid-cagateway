@@ -1,20 +1,21 @@
+
 # HydrantId
 
 HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA
 
 #### Integration status: Production - Ready for use in production environments.
 
+## About the Keyfactor AnyCA Gateway DCOM Connector
 
-## About the Keyfactor AnyGateway CA Connector
-
-This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
-
+This repository contains an AnyCA Gateway Connector, which is a plugin to the Keyfactor AnyGateway. AnyCA Gateway Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
 
 ## Support for HydrantId
 
-HydrantId is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative.
+HydrantId is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket via the Keyfactor Support Portal at https://support.keyfactor.com
 
 ###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+
+---
 
 
 ---
@@ -23,6 +24,16 @@ HydrantId is supported by Keyfactor for Keyfactor customers. If you have a suppo
 
 
 
+## Keyfactor AnyCA Gateway Framework Supported
+The Keyfactor gateway framework implements common logic shared across various gateway implementations and handles communication with Keyfactor Command. The gateway framework hosts gateway implementations or plugins that understand how to communicate with specific CAs. This allows you to integrate your third-party CAs with Keyfactor Command such that they behave in a manner similar to the CAs natively supported by Keyfactor Command.
+
+
+
+
+This gateway extension was compiled against version  of the AnyCA Gateway DCOM Framework.  You will need at least this version of the framework Installed. If you have a later AnyGateway Framework Installed you will probably need to add binding redirects in the CAProxyServer.exe.config file to make things work properly.
+
+
+[Keyfactor CAGateway Install Guide](https://software.keyfactor.com/Guides/AnyGateway_Generic/Content/AnyGateway/Introduction.htm)
 
 
 
@@ -194,13 +205,6 @@ REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 wou
 		}
 	}
  ```
-=======
-1) Command Server - Copy and Unzip the Template Setup Files located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/TemplateSetup.zip)
-2) Command Server - Change the Security Settings in the CaTemplateUserSecurity.csv file to the appropriate settings for Test or Production
-3) Command Server - Run the CreateTemplate.ps1 file and choose option 1 to create the templates in active directory.
-   *Note if you get errors the URL to the API or Security is likely wrong.  Make sure the API calls are run with an administrator user in KF Command* 
-4) Command Server - Use the Keyfactor Portal to Import the Templates created in Active Directory in step #3 above
-   *Note there are default values for the API Url, UserId, and Password. You will have to override the default API Questions to the appropriate values.*
 
 ### Certificate Authority Installation
 1) Gateway Server - Start the Keyfactor Gateway Service
@@ -215,4 +219,5 @@ Set-KeyfactorGatewayConfig -LogicalName "HydrantId" -FilePath [path to json file
 
 ### License
 [Apache](https://apache.org/licenses/LICENSE-2.0)
+
 

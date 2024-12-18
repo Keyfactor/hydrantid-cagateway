@@ -1,5 +1,9 @@
+v1.1.3
+- Fixed sync Issue related to API connectivity to Hydrant ID
+  
 v1.1.2
 - Recompiled agains the latest gateway and Bouncy Castle Frameworks
+  
 v1.1.1
 - Fixed error handing to match Hydrant new API Structure
 
