@@ -1,34 +1,43 @@
-<h1 align="center" style="border-bottom: none">
-    GCP CAS AnyCA Gateway DCOM plugin
-</h1>
 
-<p align="center">
-  <!-- Badges -->
-<img src="https://img.shields.io/badge/integration_status-production-3D1973?style=flat-square" alt="Integration Status: production" />
-<a href="https://github.com/Keyfactor/gcp-cloud-cagateway/releases"><img src="https://img.shields.io/github/v/release/Keyfactor/gcp-cloud-cagateway?style=flat-square" alt="Release" /></a>
-<img src="https://img.shields.io/github/issues/Keyfactor/gcp-cloud-cagateway?style=flat-square" alt="Issues" />
-<img src="https://img.shields.io/github/downloads/Keyfactor/gcp-cloud-cagateway/total?style=flat-square&label=downloads&color=28B905" alt="GitHub Downloads (all assets, all releases)" />
-</p>
+# GCP CAS AnyCA Gateway DCOM plugin
 
-<p align="center">
-  <!-- TOC -->
-  <a href="#support">
-    <b>Support</b>
-  </a> 
-  ·
-  <a href="#license">
-    <b>License</b>
-  </a>
-  ·
-  <a href="https://github.com/topics/keyfactor-integration">
-    <b>Related Integrations</b>
-  </a>
-</p>
+AnyCA Gateway DCOM plugin that extends Google Cloud Platform Certificate Authority Service to Keyfactor Command
 
-## Support
-The GCP CAS AnyCA Gateway DCOM plugin is open source and there is **no SLA**. Keyfactor will address issues as resources become available. Keyfactor customers may request escalation by opening up a support ticket through their Keyfactor representative. 
+#### Integration status: Production - Ready for use in production environments.
 
-> To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+## About the Keyfactor AnyCA Gateway DCOM Connector
+
+This repository contains an AnyCA Gateway Connector, which is a plugin to the Keyfactor AnyGateway. AnyCA Gateway Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
+
+## Support for GCP CAS AnyCA Gateway DCOM plugin
+
+GCP CAS AnyCA Gateway DCOM plugin is open source and supported on best effort level for this tool/library/client.  This means customers can report Bugs, Feature Requests, Documentation amendment or questions as well as requests for customer information required for setup that needs Keyfactor access to obtain. Such requests do not follow normal SLA commitments for response or resolution. If you have a support issue, please open a support ticket via the Keyfactor Support Portal at https://support.keyfactor.com/
+
+###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+
+---
+
+
+---
+
+
+
+
+
+## Keyfactor AnyCA Gateway Framework Supported
+The Keyfactor gateway framework implements common logic shared across various gateway implementations and handles communication with Keyfactor Command. The gateway framework hosts gateway implementations or plugins that understand how to communicate with specific CAs. This allows you to integrate your third-party CAs with Keyfactor Command such that they behave in a manner similar to the CAs natively supported by Keyfactor Command.
+
+
+
+
+This gateway extension was compiled against version  of the AnyCA Gateway DCOM Framework.  You will need at least this version of the framework Installed. If you have a later AnyGateway Framework Installed you will probably need to add binding redirects in the CAProxyServer.exe.config file to make things work properly.
+
+
+[Keyfactor CAGateway Install Guide](https://software.keyfactor.com/Guides/AnyGateway_Generic/Content/AnyGateway/Introduction.htm)
+
+
+
+---
 
 
 ## Overview
@@ -106,10 +115,10 @@ The GCP CAS AnyCA Gateway DCOM plugin supports [GCP CAS Certificate Templates](h
 3. Copy `*.dll` to the `C:\Program Files\Keyfactor\Keyfactor AnyGateway` directory.
 
 4. Update the `CAProxyServer.config` file.
-    1. Update the `$.configuration.unity.CAConnector` section to point at the `HydrantIdCAProxy` class.
+    1. Update the `$.configuration.unity.CAConnector` section to point at the `GoogleCAProxy` class.
 
         ```xml
-        <alias alias="CAConnector" type="Keyfactor.AnyGateway.Google.HydrantIdCAProxy, HydrantIdCAProxy"/>
+        <alias alias="CAConnector" type="Keyfactor.AnyGateway.Google.GoogleCAProxy, GoogleCAProxy"/>
         ```
 
     2. Modify the `Newtonsoft.Json` `bindingRedirect` to redirect versions from `0.0.0.0-13.0.0.0` to `12.0.0.0`.
@@ -254,11 +263,3 @@ There are no Google Specific Changes for the GatewayRegistration section. Refer 
 ```
 
 
-
-## License
-
-Apache License 2.0, see [LICENSE](LICENSE).
-
-## Related Integrations
-
-See all [Keyfactor integrations](https://github.com/topics/keyfactor-integration).
