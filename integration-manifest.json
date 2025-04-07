@@ -1,12 +1,11 @@
 {
-  "$schema": "https://keyfactor.github.io/integration-manifest-schema.json",
-  "integration_type": "ca-gateway",
-  "name": "HydrantId",
-  "status": "production",
-  "description": "HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA",
-  "link_github": true,
-  "update_catalog": true,
-  "support_level": "kf-supported",
-  "release_dir": "HydrantIdProxy/src/HydrantIdProxy/bin/Release"
-
+    "$schema": "https://keyfactor.github.io/v2/integration-manifest-schema.json",
+    "integration_type": "ca-gateway",
+    "name": "GCP CAS AnyCA Gateway DCOM plugin",
+    "status": "production",
+    "description": "AnyCA Gateway DCOM plugin that extends Google Cloud Platform Certificate Authority Service to Keyfactor Command",
+    "link_github": true,
+    "update_catalog": true,
+    "support_level": "kf-community",
+    "release_dir": "src\\GoogleCAProxy\\bin\\Release"
 }
