@@ -118,7 +118,7 @@ The GCP CAS AnyCA Gateway DCOM plugin supports [GCP CAS Certificate Templates](h
     1. Update the `$.configuration.unity.CAConnector` section to point at the `GoogleCAProxy` class.
 
         ```xml
-        <alias alias="CAConnector" type="Keyfactor.Extensions.CAPlugin.HydrantId.GoogleCAProxy, GoogleCAProxy"/>
+        <alias alias="CAConnector" type="Keyfactor.AnyGateway.Google.GoogleCAProxy, GoogleCAProxy"/>
         ```
 
     2. Modify the `Newtonsoft.Json` `bindingRedirect` to redirect versions from `0.0.0.0-13.0.0.0` to `12.0.0.0`.
