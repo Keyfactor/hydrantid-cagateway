@@ -10,9 +10,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using CAProxy.AnyGateway.Models;
-using CSS.Common.Logging;
-using CSS.PKI;
 using Keyfactor.HydrantId.Client.Models;
 using Keyfactor.HydrantId.Client.Models.Enums;
 using Keyfactor.HydrantId.Interfaces;
@@ -22,6 +19,8 @@ using Org.BouncyCastle.Pkcs;
 using Microsoft.Extensions.Logging;
 using Keyfactor.Logging;
 using LogHandler = Keyfactor.Logging.LogHandler;
+using Keyfactor.AnyGateway.Extensions;
+using Keyfactor.PKI;
 
 namespace Keyfactor.HydrantId
 {
@@ -92,7 +91,7 @@ namespace Keyfactor.HydrantId
                 throw new RevokeReasonNotSupportedException("This Revoke Reason is not Supported");
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Log.LogError($"Error Occured in RequestManager.GetMapRevokeReasons: {e.Message}");
                 throw;
@@ -117,7 +116,7 @@ namespace Keyfactor.HydrantId
             }
         }
 
-        public CertificatesPayload GetCertificatesListRequest(int offset,int limit)
+        public CertificatesPayload GetCertificatesListRequest(int offset, int limit)
         {
             try
             {
@@ -137,37 +136,26 @@ namespace Keyfactor.HydrantId
             }
         }
 
-        public CertRequestBody GetEnrollmentRequest(Guid? policyId,EnrollmentProductInfo productInfo, string csr, Dictionary<string, string[]> san)
+        public CertRequestBody GetEnrollmentRequest(Guid? policyId, EnrollmentProductInfo productInfo, string csr, Dictionary<string, string[]> san)
         {
-            try
-            {
-                Log.MethodEntry();
-                if (san.ContainsKey("dns"))
-                {
-                    return new CertRequestBody
-                    {
-                        Policy = policyId,
-                        Csr = csr,
-                        DnComponents = GetDnComponentsRequest(csr),
-                        SubjectAltNames = GetSansRequest(san),
-                        Validity = GetValidity(productInfo.ProductParameters["ValidityPeriod"],Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
-                    };
-                }
+            Log.MethodEntry();
 
-                return new CertRequestBody
-                {
-                    Policy = policyId,
-                    Csr = csr,
-                    DnComponents = GetDnComponentsRequest(csr),
-                    Validity=GetValidity(productInfo.ProductParameters["ValidityPeriod"], Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
-                };
-            }
-            catch (Exception e)
+            var request = new CertRequestBody
             {
-                Log.LogError($"Error Occured in RequestManager.GetEnrollmentRequest: {e.Message}");
-                throw;
+                Policy = policyId,
+                Csr = csr,
+                DnComponents = GetDnComponentsRequest(csr),
+                Validity = GetValidity(productInfo.ProductParameters["ValidityPeriod"], Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
+            };
+
+            if (san.ContainsKey("dns"))
+            {
+                request.SubjectAltNames = GetSansRequest(san);
             }
+
+            return request;
         }
+
 
         public RenewalRequest GetRenewalRequest(string csr, bool reuseCsr)
         {
@@ -187,13 +175,13 @@ namespace Keyfactor.HydrantId
             }
         }
 
-        private CertRequestBodyValidity GetValidity(string period,int units)
+        private CertRequestBodyValidity GetValidity(string period, int units)
         {
             try
             {
                 Log.MethodEntry();
                 CertRequestBodyValidity validity = new CertRequestBodyValidity();
-                switch(period)
+                switch (period)
                 {
                     case "Years":
                         validity.Years = units;
@@ -205,7 +193,7 @@ namespace Keyfactor.HydrantId
                         validity.Days = units;
                         break;
                 }
-                        
+
                 return validity;
             }
             catch (Exception e)
@@ -226,7 +214,7 @@ namespace Keyfactor.HydrantId
                 {
                     dnsNames.Add(v);
                 }
-                san.Dnsname=dnsNames;
+                san.Dnsname = dnsNames;
                 return san;
             }
             catch (Exception e)
@@ -238,12 +226,12 @@ namespace Keyfactor.HydrantId
 
         public EnrollmentResult
             GetEnrollmentResult(
-                ICertificate enrollmentResult, CAConnectorCertificate cert)
+                ICertificate enrollmentResult, AnyCAPluginCertificate cert)
         {
             try
             {
                 Log.MethodEntry();
-                if (enrollmentResult==null)
+                if (enrollmentResult == null)
                 {
                     return new EnrollmentResult
                     {
@@ -340,11 +328,11 @@ namespace Keyfactor.HydrantId
                 return new CertRequestBodyDnComponents
                 {
                     Cn = cn,
-                    Ou = new List<string>{ou},
-                    O=o,
-                    L=l,
+                    Ou = new List<string> { ou },
+                    O = o,
+                    L = l,
                     St = st,
-                    C=c
+                    C = c
                 };
             }
             catch (Exception e)

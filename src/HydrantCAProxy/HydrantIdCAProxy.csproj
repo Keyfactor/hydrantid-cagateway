@@ -1,167 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{011DC646-BEF9-4D3B-9D20-CA444A26B355}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Keyfactor.AnyGateway.Google</RootNamespace>
-    <AssemblyName>HydrantIdCAProxy</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseWinFormsOutOfProcDesigner>False</UseWinFormsOutOfProcDesigner>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseWinFormsOutOfProcDesigner>False</UseWinFormsOutOfProcDesigner>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="CAProxy.AnyGateway.Core">
-      <HintPath>$(NuGetPackageRoot)keyfactor.anygateway.sdk\24.2.0-prerelease-47446\lib\net472\CAProxy.AnyGateway.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="CAProxy.Interfaces">
-      <HintPath>$(NuGetPackageRoot)keyfactor.anygateway.sdk\24.2.0-prerelease-47446\lib\net472\CAProxy.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="CommonCAProxy">
-      <HintPath>$(NuGetPackageRoot)keyfactor.anygateway.sdk\24.2.0-prerelease-47446\lib\net472\CommonCAProxy.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Client\HydrantIdClient.cs" />
-    <Compile Include="Client\Models\Certificate.cs" />
-    <Compile Include="Client\Models\CertificateStatus.cs" />
-    <Compile Include="Client\Models\CertificateUser.cs" />
-    <Compile Include="Client\Models\CertRequest.cs" />
-    <Compile Include="Client\Models\CertRequestBody.cs" />
-    <Compile Include="Client\Models\CertRequestBodyDnComponents.cs" />
-    <Compile Include="Client\Models\CertRequestBodySubjectAltNames.cs" />
-    <Compile Include="Client\Models\CertRequestBodyValidity.cs" />
-    <Compile Include="Client\Models\CertRequestPolicy.cs" />
-    <Compile Include="Client\Models\CertRequestResult.cs" />
-    <Compile Include="Client\Models\CertRequestStatus.cs" />
-    <Compile Include="Client\Models\CertRequestUser.cs" />
-    <Compile Include="Client\Models\Enums\IssuanceStatus.cs" />
-    <Compile Include="Client\Models\Enums\RevocationReasons.cs" />
-    <Compile Include="Client\Models\Enums\RevocationStatusEnum.cs" />
-    <Compile Include="Client\Models\Enums\SortDirectionEnum.cs" />
-    <Compile Include="Client\Models\ErrorReturn.cs" />
-    <Compile Include="Client\Models\GetCertificatesPayload.cs" />
-    <Compile Include="Client\Models\GetCertificatesResponse.cs" />
-    <Compile Include="Client\Models\GetCertificatesResponseItem.cs" />
-    <Compile Include="Client\Models\NameObject.cs" />
-    <Compile Include="Client\Models\Policy.cs" />
-    <Compile Include="Client\Models\PolicyDetails.cs" />
-    <Compile Include="Client\Models\PolicyDetailsCustomExtensions.cs" />
-    <Compile Include="Client\Models\PolicyDetailsCustomFields.cs" />
-    <Compile Include="Client\Models\PolicyDetailsDnComponents.cs" />
-    <Compile Include="Client\Models\PolicyDetailsExpiryEmails.cs" />
-    <Compile Include="Client\Models\PolicyDetailsSubjectAltNames.cs" />
-    <Compile Include="Client\Models\PolicyDetailsValidity.cs" />
-    <Compile Include="Client\Models\PolicyEnabled.cs" />
-    <Compile Include="Client\Models\RenewalRequest.cs" />
-    <Compile Include="Client\Models\RevokeCertificateReason.cs" />
-    <Compile Include="Client\Models\RevokeCertificateReasonIssuerDN.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Exceptions\RetryCountExceededException.cs" />
-    <Compile Include="Exceptions\RevokeReasonNotSupportedException.cs" />
-    <Compile Include="Extensions\HttpClientExtensions.cs" />
-    <Compile Include="HydrantIdCAProxy.cs" />
-    <Compile Include="Interfaces\ICertificate.cs" />
-    <Compile Include="Interfaces\ICertificatesPayload.cs" />
-    <Compile Include="Interfaces\ICertificatesResponse.cs" />
-    <Compile Include="Interfaces\ICertificatesResponseItem.cs" />
-    <Compile Include="Interfaces\ICertificateStatus.cs" />
-    <Compile Include="Interfaces\ICertificateUser.cs" />
-    <Compile Include="Interfaces\ICertRequest.cs" />
-    <Compile Include="Interfaces\ICertRequestBody.cs" />
-    <Compile Include="Interfaces\ICertRequestBodyDnComponents.cs" />
-    <Compile Include="Interfaces\ICertRequestBodySubjectAltNames.cs" />
-    <Compile Include="Interfaces\ICertRequestBodyValidity.cs" />
-    <Compile Include="Interfaces\ICertRequestPolicy.cs" />
-    <Compile Include="Interfaces\ICertRequestResult.cs" />
-    <Compile Include="Interfaces\ICertRequestStatus.cs" />
-    <Compile Include="Interfaces\ICertRequestUser.cs" />
-    <Compile Include="Interfaces\IErrorReturn.cs" />
-    <Compile Include="Interfaces\IHawkCredential.cs" />
-    <Compile Include="Interfaces\IHawkCredentialComment.cs" />
-    <Compile Include="Interfaces\IHawkCredentialComments.cs" />
-    <Compile Include="Interfaces\IHawkCredentialDeleteResults.cs" />
-    <Compile Include="Interfaces\INameObject.cs" />
-    <Compile Include="Interfaces\IPolicy.cs" />
-    <Compile Include="Interfaces\IPolicyDetails.cs" />
-    <Compile Include="Interfaces\IPolicyDetailsCustomExtensions.cs" />
-    <Compile Include="Interfaces\IPolicyDetailsCustomFields.cs" />
-    <Compile Include="Interfaces\IPolicyDetailsDnComponents.cs" />
-    <Compile Include="Interfaces\IPolicyDetailsExpiryEmails.cs" />
-    <Compile Include="Interfaces\IPolicyDetailsSubjectAltNames.cs" />
-    <Compile Include="Interfaces\IPolicyDetailsValidity.cs" />
-    <Compile Include="Interfaces\IPolicyEnabled.cs" />
-    <Compile Include="Interfaces\IRenewalRequest.cs" />
-    <Compile Include="Interfaces\IRenewalResponse.cs" />
-    <Compile Include="Interfaces\IRevokeCertificateReason.cs" />
-    <Compile Include="Interfaces\IRevokeCertificateReasonIssuerDn.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="RequestManager.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Common.Logging" Version="3.4.1" />
-    <PackageReference Include="Common.Logging.Core" Version="3.4.1.0" />
-    <PackageReference Include="CSS.Common" Version="1.7.0" />
-    <PackageReference Include="CSS.PKI" Version="2.13.0" />
-    <PackageReference Include="HawkNet">
-      <Version>1.4.4</Version>
-    </PackageReference>
-    <PackageReference Include="Keyfactor.AnyGateway.SDK" Version="24.2.0-PRERELEASE-47446">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Keyfactor.Logging" Version="1.1.2" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
-    <PackageReference Include="System.Security.AccessControl" Version="6.0.1" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Config\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<RootNamespace>Keyfactor.Extensions.CAPlugin.HydrantId</RootNamespace>
+		<AssemblyName>HydrantIdCAPlugin</AssemblyName>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Keyfactor.AnyGateway.IAnyCAPlugin" Version="3.0.0" />
+        <PackageReference Include="Keyfactor.Logging" Version="1.1.1" />
+        <PackageReference Include="Keyfactor.PKI" Version="5.5.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="manifest.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>

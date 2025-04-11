@@ -5,352 +5,75 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
-using CAProxy.AnyGateway;
-using CAProxy.AnyGateway.Interfaces;
-using CAProxy.AnyGateway.Models;
-using CAProxy.Common;
-using CSS.PKI;
 using Keyfactor.HydrantId.Client;
 using Keyfactor.HydrantId.Interfaces;
 using Keyfactor.HydrantId;
 using Keyfactor.Logging;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using CSS.Common.Logging;
 using System.Threading.Tasks;
 using LogHandler = Keyfactor.Logging.LogHandler;
-using CSS.Common;
 using Keyfactor.HydrantId.Client.Models;
 using System.Diagnostics;
+using Keyfactor.AnyGateway.Extensions;
+using Keyfactor.PKI;
+using System.Data;
+using Keyfactor.Extensions.CAPlugin.HydrantId;
 
 namespace Keyfactor.AnyGateway.Google
 {
-    public class HydrantIdCAProxy : BaseCAConnector
+    public class HydrantIdCAProxy : IAnyCAPlugin
     {
-        private static readonly ILogger Log = LogHandler.GetClassLogger<HydrantIdCAProxy>();
+        private static readonly ILogger _logger = LogHandler.GetClassLogger<HydrantIdCAProxy>();
         private RequestManager _requestManager;
-        private ICAConnectorConfigProvider Config { get; set; }
+        private IAnyCAPluginConfigProvider Config { get; set; }
+        private ICertificateDataReader certDataReader;
 
-        public override EnrollmentResult Enroll(ICertificateDataReader certificateDataReader, string csr,
-            string subject, Dictionary<string, string[]> san, EnrollmentProductInfo productInfo,
-            PKIConstants.X509.RequestFormat requestFormat, RequestUtilities.EnrollmentType enrollmentType)
+        public void Initialize(IAnyCAPluginConfigProvider configProvider, ICertificateDataReader certificateDataReader)
         {
-            Log.MethodEntry();
-            _requestManager=new RequestManager();
-            CertRequestResult enrollmentResponse = null;
-            int timerTries = 0;
-            Certificate csrTrackingResponse = null;
-            var client = new HydrantIdClient(Config);
-
-            switch (enrollmentType)
-            {
-                case RequestUtilities.EnrollmentType.New:
-                case RequestUtilities.EnrollmentType.Reissue:
-                    Log.LogTrace("Entering New Enrollment");
-
-                    var policyListResult =
-                        Task.Run(async () => await client.GetPolicyList())
-                            .Result;
-
-                    Log.LogTrace($"Policy Result List: {JsonConvert.SerializeObject(policyListResult)}");
-                    var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
-
-                    Log.LogTrace($"PolicyId: {JsonConvert.SerializeObject(policyId)}");
-
-                    var enrollmentRequest =
-                        _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
-
-                    Log.LogTrace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
-                    enrollmentResponse =
-                        Task.Run(async () => await client.GetSubmitEnrollmentAsync(enrollmentRequest))
-                            .Result;
-                    Log.LogTrace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
-
-                    if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
-                    {
-                        timerTries = +1;
-                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
-                    }
-                    else
-                    {
-                        return new EnrollmentResult
-                        {
-                            Status = 30, //failure
-                            StatusMessage = $"Enrollment Failed with error {enrollmentResponse?.ErrorReturn?.Error}"
-                        };
-                    }
-
-
-                    Log.MethodExit();
-
-                    break;
-
-                case RequestUtilities.EnrollmentType.Renew:
-                    Log.LogTrace("Entering Renew...");
-
-                    var renewalRequest = _requestManager.GetRenewalRequest(csr, false);
-                    Log.LogTrace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewalRequest)}");
-                    var sn = productInfo.ProductParameters["PriorCertSN"];
-                    Log.LogTrace($"Prior Cert Serial Number= {sn}");
-                    var priorCert = certificateDataReader.GetCertificateRecord(
-                        DataConversion.HexToBytes(sn));
-
-                    var uUId = priorCert.CARequestID; //uUId is a GUID
-
-                    Log.LogTrace($"Hydrant Certificate Id Plus Serial #= {uUId}");
-
-                    Log.LogTrace($"Reissue CA RequestId: {uUId}");
-                    var certificateId = uUId.Substring(0, 36);
-                    enrollmentResponse =
-                        Task.Run(async () =>
-                                await client.GetSubmitRenewalAsync(certificateId, renewalRequest))
-                            .Result;
-                    Log.LogTrace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
-
-                    if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
-                    {
-                        timerTries = +1;
-                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
-                    }
-                    else
-                    {
-                        return new EnrollmentResult
-                        {
-                            Status = 30, //failure
-                            StatusMessage = $"Enrollment Failed with error {enrollmentResponse?.ErrorReturn?.Error}"
-                        };
-                    }
-                    break;
-            }
-
-            if (csrTrackingResponse == null && timerTries > 0)
-            {
-                return new EnrollmentResult
-                {
-                    Status = 30, //failure
-                    StatusMessage = $"Certificate may still waiting on Hydrant and is not ready for download"
-                };
-            }
-
-            var cert = GetSingleRecord(csrTrackingResponse.Id.ToString());
-            return _requestManager.GetEnrollmentResult(csrTrackingResponse, cert);
-        }
-
-        public override CAConnectorCertificate GetSingleRecord(string caRequestId)
-        {
-            Logger.MethodEntry();
-            _requestManager = new RequestManager();
-            Log.LogTrace($"Keyfactor Ca Id: {caRequestId}");
+            _logger.MethodEntry();
             try
             {
-                var client = new HydrantIdClient(Config);
-                var certificateResponse =
-                    Task.Run(async () =>
-                            await client.GetSubmitGetCertificateAsync(caRequestId.Substring(0, 36)))
-                        .Result;
-
-                Log.LogTrace($"Single Cert JSON: {JsonConvert.SerializeObject(certificateResponse)}");
-                Log.MethodExit();
-                return new CAConnectorCertificate
-                {
-                    CARequestID = caRequestId,
-                    Certificate = certificateResponse.Pem,
-                    ResolutionDate = Convert.ToDateTime(certificateResponse.NotAfter),
-                    Status = _requestManager.GetMapReturnStatus(certificateResponse.RevocationStatus),
-                    SubmissionDate = Convert.ToDateTime(certificateResponse.CreatedAt)
-                };
-            }
-            catch (Exception) //Most likely cert is not available yet, just get it on the sync
-            {
-                return new CAConnectorCertificate
-                {
-                    CARequestID = caRequestId,
-                    Status = _requestManager.GetMapReturnStatus(0) //Unknown
-                };
-            }
-        }
-
-        public override void Initialize(ICAConnectorConfigProvider configProvider)
-        {
-            Log.MethodEntry();
-            try
-            {
+                certDataReader= certificateDataReader;
                 Config = configProvider;
             }
             catch (Exception ex)
             {
-                Log.LogError($"Failed to initialize GCP CAS CAPlugin: {ex}");
+                _logger.LogError($"Failed to initialize GCP CAS CAPlugin: {ex}");
             }
         }
 
-        public override void Ping()
+        public void ValidateCAConnectionInfo(Dictionary<string, object> connectionInfo)
         {
-            Log.MethodEntry();
-            Log.MethodExit();
-        }
+            _logger.MethodEntry();
+            _logger.LogDebug($"Validating GCP CAS CA Connection properties");
+            var rawData = JsonConvert.SerializeObject(connectionInfo);
+            HydrantIdCAProxyConfig.Config config = JsonConvert.DeserializeObject<HydrantIdCAProxyConfig.Config>(rawData);
 
-        public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
-        {
-            try
+            _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdBaseUrl: {config.HydrantIdBaseUrl}");
+            _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdAuthId: {config.HydrantIdAuthId}");
+            _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdAuthKey: {config.HydrantIdAuthKey}");
+
+            List<string> missingFields = new List<string>();
+
+            if (string.IsNullOrEmpty(config.HydrantIdBaseUrl)) missingFields.Add(nameof(config.HydrantIdBaseUrl));
+            if (string.IsNullOrEmpty(config.HydrantIdAuthId)) missingFields.Add(nameof(config.HydrantIdAuthId));
+            if (string.IsNullOrEmpty(config.HydrantIdAuthKey)) missingFields.Add(nameof(config.HydrantIdAuthKey));
+
+            if (missingFields.Count > 0)
             {
-                Logger.LogTrace("Staring Revoke Method");
-                _requestManager = new RequestManager();
-                var client = new HydrantIdClient(Config);
-                var hydrantId = caRequestId.Substring(0, 36);
-                var revokeReason = _requestManager.GetMapRevokeReasons(revocationReason);
-
-                Logger.LogTrace($"Revoke Reason {revokeReason}");
-
-                var revokeResponse = Task.Run(async () =>
-                        await client.GetSubmitRevokeCertificateAsync(hydrantId, revokeReason))
-                    .Result;
-
-                Logger.LogTrace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
-                Logger.MethodExit();
-                return 1;
-            }
-            catch (Exception e)
-            {
-                Logger.LogError($"An Error has occurred during the revoke process {e.Message}");
-                Logger.MethodExit();
-                return -1;
-            }
-        }
-
-        private Certificate GetCertificateOnTimer(string Id)
-        {
-            //Get the csr tracking response from the tracking Id returned from Enrollment
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var client = new HydrantIdClient(Config);
-            Certificate csrTrackingResponse = null;
-
-            while (stopwatch.Elapsed < TimeSpan.FromSeconds(30) && csrTrackingResponse == null)
-            {
-                try
-                {
-                    csrTrackingResponse =
-                    Task.Run(async () => await client.GetSubmitGetCertificateByCsrAsync(Id))
-                        .Result;
-                }
-                catch (System.AggregateException e)
-                {
-                    Log.LogTrace($"Enrollment Response Not Available Yet, try again {LogHandler.FlattenException(e)}.");
-                }
-                Thread.Sleep(1000);
+                throw new ArgumentException($"The following required fields are missing or empty: {string.Join(", ", missingFields)}");
             }
 
-            return csrTrackingResponse;
+            _logger.MethodExit();
         }
 
-        public override void Synchronize(ICertificateDataReader certificateDataReader,
-            BlockingCollection<CAConnectorCertificate> blockingBuffer,
-            CertificateAuthoritySyncInfo certificateAuthoritySyncInfo,
-            CancellationToken cancelToken)
-        {
-            Log.MethodEntry();
-            _requestManager = new RequestManager();
-            try
-            {
-                var certs = new BlockingCollection<ICertificatesResponseItem>(100);
-                var client = new HydrantIdClient(Config);
-                _ = client.GetSubmitCertificateListRequestAsync(certs, cancelToken);
-
-                foreach (var currentResponseItem in certs.GetConsumingEnumerable(cancelToken))
-                {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        Log.LogError("Synchronize was canceled.");
-                        break;
-                    }
-
-                    try
-                    {
-                        Log.LogTrace($"Took Certificate ID {currentResponseItem?.Id} from Queue");
-                        if (currentResponseItem != null)
-                        {
-                            var certStatus = _requestManager.GetMapReturnStatus(currentResponseItem.RevocationStatus);
-                            Log.LogTrace($"Numeric Status {certStatus}");
-
-                            if (certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) ||
-                                certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
-                            {
-                                var productId = currentResponseItem.Policy.Name;
-                                Log.LogTrace($"Product Id {productId}");
-
-                                var singleCert = client.GetSubmitGetCertificateAsync(currentResponseItem.Id);
-
-                                var fileContent = singleCert.Result.Pem ?? string.Empty;
-
-                                Log.LogTrace($"Certificate Content: {fileContent}");
-
-                                if (fileContent.Length > 0)
-                                {
-                                    var certData = fileContent.Replace("\n", string.Empty);
-                                    var splitCerts =
-                                        certData.Split(
-                                            new[] { "-----END CERTIFICATE-----", "-----BEGIN CERTIFICATE-----" },
-                                            StringSplitOptions.RemoveEmptyEntries);
-                                    foreach (var cert in splitCerts)
-                                        try
-                                        {
-                                            var currentCert = new X509Certificate2(Encoding.ASCII.GetBytes(cert));
-                                            var caReqId = $"{currentResponseItem.Id}-{currentCert.SerialNumber}";
-                                            Log.LogTrace($"Split Cert Value: {cert}");
-                                            blockingBuffer.Add(new CAConnectorCertificate
-                                            {
-                                                CARequestID = $"{currentResponseItem.Id}",
-                                                Certificate = cert,
-                                                SubmissionDate = Convert.ToDateTime(singleCert.Result.CreatedAt),
-                                                Status = certStatus,
-                                                ProductID = productId
-                                            }, cancelToken);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Log.LogError(
-                                                $"Exception occurred Adding Cert to buffer: {e.Message} HydrantId: {currentResponseItem.Id} CommonName: {currentResponseItem.CommonName} Serial: {currentResponseItem.Serial}");
-                                        }
-                                }
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Log.LogError("Synchronize was canceled.");
-                        break;
-                    }
-                }
-            }
-            catch (AggregateException aggEx)
-            {
-                Log.LogError("Csc Global Synchronize Task failed!");
-                Log.MethodExit();
-                // ReSharper disable once PossibleIntendedRethrow
-                throw aggEx;
-            }
-
-            Log.MethodExit();
-        }
-
-
-        public override void ValidateCAConnectionInfo(Dictionary<string, object> connectionInfo)
-        {
-            Log.MethodEntry();
-            List<string> errors = new List<string>();
-
-            Log.LogTrace("Checking required CAConnection config");
-            errors.AddRange(CheckRequiredValues(connectionInfo));
-
-            if (errors.Any()) throw new Exception(string.Join("|", errors.ToArray()));
-        }
-
-        public override void ValidateProductInfo(EnrollmentProductInfo productInfo,
+        public void ValidateProductInfo(EnrollmentProductInfo productInfo,
             Dictionary<string, object> connectionInfo)
         {
-            Log.MethodEntry();
+            _logger.MethodEntry();
             //TODO: Evaluate Template (if avaiable) based on ProductInfo
-            Log.MethodExit();
+            _logger.MethodExit();
         }
 
         private static List<string> CheckRequiredValues(Dictionary<string, object> connectionInfo, params string[] args)
@@ -362,32 +85,321 @@ namespace Keyfactor.AnyGateway.Google
             return errors;
         }
 
-
         private static readonly Func<string, string> pemify = ss =>
             ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + pemify(ss.Substring(64));
 
+        public async Task Ping()
+        {
+            _logger.MethodEntry();
+            try
+            {
+                var client = new HydrantIdClient(Config);
+                var success = await client.Ping();
 
+                if (!success)
+                {
+                    throw new Exception("HydrantIdClient Ping failed.");
+                }
 
-        #region Obsolete Methods
+                _logger.LogTrace("HydrantIdCAProxy Ping succeeded.");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error during HydrantIdCAProxy Ping: {e.Message}");
+                throw;
+            }
+            finally
+            {
+                _logger.MethodExit();
+            }
+        }
 
-        [Obsolete]
-        public override EnrollmentResult Enroll(string csr, string subject, Dictionary<string, string[]> san,
-            EnrollmentProductInfo productInfo, PKIConstants.X509.RequestFormat requestFormat,
-            RequestUtilities.EnrollmentType enrollmentType)
+        Task IAnyCAPlugin.ValidateCAConnectionInfo(Dictionary<string, object> connectionInfo)
         {
             throw new NotImplementedException();
         }
 
-        [Obsolete]
-        public override void Synchronize(ICertificateDataReader certificateDataReader,
-            BlockingCollection<CertificateRecord> blockingBuffer,
-            CertificateAuthoritySyncInfo certificateAuthoritySyncInfo,
-            CancellationToken cancelToken,
-            string logicalName)
+        Task IAnyCAPlugin.ValidateProductInfo(EnrollmentProductInfo productInfo, Dictionary<string, object> connectionInfo)
         {
             throw new NotImplementedException();
         }
 
-        #endregion
+
+        public List<string> GetProductIds()
+        {
+            var client = new HydrantIdClient(Config);
+            var policies = client.GetPolicyList().GetAwaiter().GetResult();
+
+            var ids = policies
+                .Where(p => p.Id.HasValue)
+                .Select(p => p.Id.Value.ToString())
+                .ToList();
+
+            return ids;
+        }
+
+        public async Task Synchronize(BlockingCollection<AnyCAPluginCertificate> blockingBuffer, DateTime? lastSync, bool fullSync, CancellationToken cancelToken)
+        {
+            _logger.MethodEntry();
+            _requestManager = new RequestManager();
+
+            var certs = new BlockingCollection<ICertificatesResponseItem>(100);
+            var client = new HydrantIdClient(Config);
+
+            _ = client.GetSubmitCertificateListRequestAsync(certs, cancelToken);
+
+            try
+            {
+                foreach (var item in certs.GetConsumingEnumerable(cancelToken))
+                {
+                    cancelToken.ThrowIfCancellationRequested();
+
+                    if (item == null)
+                        continue;
+
+                    _logger.LogTrace($"Took Certificate ID {item.Id} from Queue");
+
+                    var certStatus = _requestManager.GetMapReturnStatus(item.RevocationStatus);
+                    _logger.LogTrace($"Numeric Status: {certStatus}");
+
+                    if (certStatus != Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) &&
+                        certStatus != Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                        continue;
+
+                    _logger.LogTrace($"Product Id: {item.Policy.Name}");
+
+                    try
+                    {
+                        var cert = await client.GetSubmitGetCertificateAsync(item.Id);
+                        var fileContent = cert.Pem ?? string.Empty;
+
+                        if (string.IsNullOrWhiteSpace(fileContent))
+                            continue;
+
+                        var certsClean = fileContent
+                            .Replace("\n", string.Empty)
+                            .Split(new[] { "-----END CERTIFICATE-----", "-----BEGIN CERTIFICATE-----" }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (var certStr in certsClean)
+                        {
+                            try
+                            {
+                                var x509Cert = new X509Certificate2(Encoding.ASCII.GetBytes(certStr));
+                                var requestId = $"{item.Id}-{x509Cert.SerialNumber}";
+
+                                blockingBuffer.Add(new AnyCAPluginCertificate
+                                {
+                                    CARequestID = item.Id,
+                                    Certificate = certStr,
+                                    Status = certStatus,
+                                    ProductID = item.Policy.Name
+                                }, cancelToken);
+
+                                _logger.LogTrace($"Processed cert with serial {x509Cert.SerialNumber}");
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError($"Error parsing cert: {ex.Message}, ID: {item.Id}, CN: {item.CommonName}, Serial: {item.Serial}");
+                            }
+                        }
+                    }
+                    catch (Exception certEx)
+                    {
+                        _logger.LogError($"Failed to retrieve or process cert {item.Id}: {certEx.Message}");
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogError("Synchronize was canceled.");
+            }
+            catch (AggregateException)
+            {
+                _logger.LogError("Csc Global Synchronize Task failed!");
+                throw;
+            }
+            finally
+            {
+                _logger.MethodExit();
+            }
+        }
+
+        public async Task<EnrollmentResult> Enroll(string csr, string subject, Dictionary<string, string[]> san, EnrollmentProductInfo productInfo, RequestFormat requestFormat, EnrollmentType enrollmentType)
+        {
+            _logger.MethodEntry();
+            _requestManager = new RequestManager();
+            int timerTries = 0;
+            Certificate csrTrackingResponse = null;
+            var client = new HydrantIdClient(Config);
+
+            try
+            {
+                CertRequestResult enrollmentResponse = null;
+
+                if (enrollmentType == EnrollmentType.New || enrollmentType == EnrollmentType.Reissue)
+                {
+                    _logger.LogTrace("Entering New Enrollment");
+                    var policyListResult = await client.GetPolicyList();
+                    _logger.LogTrace($"Policy Result List: {JsonConvert.SerializeObject(policyListResult)}");
+
+                    var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
+                    _logger.LogTrace($"PolicyId: {JsonConvert.SerializeObject(policyId)}");
+
+                    var enrollmentRequest = _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
+                    _logger.LogTrace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
+
+                    enrollmentResponse = await client.GetSubmitEnrollmentAsync(enrollmentRequest);
+                }
+                else if (enrollmentType == EnrollmentType.Renew)
+                {
+                    _logger.LogTrace("Entering Renew...");
+
+                    var renewRequest = _requestManager.GetRenewalRequest(csr, false);
+                    _logger.LogTrace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
+
+                    var sn = productInfo.ProductParameters["PriorCertSN"];
+                    _logger.LogTrace($"Prior Cert Serial Number: {sn}");
+
+                    //var priorCert = certDataReader.(DataConversion.HexToBytes(sn));
+                    var certificateId = await certDataReader.GetRequestIDBySerialNumber(sn);
+                                      
+                    _logger.LogTrace($"Renewal CA RequestId: {certificateId}");
+
+                    enrollmentResponse = await client.GetSubmitRenewalAsync(certificateId, renewRequest);
+                }
+
+                if (enrollmentResponse?.ErrorReturn?.Status == "Failure")
+                {
+                    return new EnrollmentResult
+                    {
+                        Status = 30,
+                        StatusMessage = $"Enrollment Failed with error {enrollmentResponse.ErrorReturn.Error}"
+                    };
+                }
+
+                timerTries++;
+                csrTrackingResponse = await GetCertificateOnTimerAsync(enrollmentResponse?.RequestStatus?.Id);
+
+                if (csrTrackingResponse == null)
+                {
+                    return new EnrollmentResult
+                    {
+                        Status = 30,
+                        StatusMessage = "Certificate may still be pending in Hydrant and is not ready for download"
+                    };
+                }
+
+                var cert = await GetSingleRecord(csrTrackingResponse.Id.ToString());
+                return _requestManager.GetEnrollmentResult(csrTrackingResponse, cert);
+            }
+            finally
+            {
+                _logger.MethodExit();
+            }
+        }
+
+        public async Task<int> Revoke(string caRequestID, string hexSerialNumber, uint revocationReason)
+        {
+            _logger.MethodEntry();
+            _requestManager = new RequestManager();
+
+            try
+            {
+                _logger.LogTrace("Starting Revoke Method");
+
+                var client = new HydrantIdClient(Config);
+                var hydrantId = caRequestID.Substring(0, 36);
+                var revokeReason = _requestManager.GetMapRevokeReasons(revocationReason);
+
+                _logger.LogTrace($"Revoke Reason: {revokeReason}");
+
+                var revokeResponse = await client.GetSubmitRevokeCertificateAsync(hydrantId, revokeReason);
+                _logger.LogTrace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
+
+                return 1;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error during revoke process: {e.Message}");
+                return -1;
+            }
+            finally
+            {
+                _logger.MethodExit();
+            }
+        }
+
+        private async Task<Certificate> GetCertificateOnTimerAsync(string id)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var client = new HydrantIdClient(Config);
+
+            while (stopwatch.Elapsed < TimeSpan.FromSeconds(30))
+            {
+                try
+                {
+                    var result = await client.GetSubmitGetCertificateByCsrAsync(id);
+                    if (result != null)
+                        return result;
+                }
+                catch (Exception e)
+                {
+                    _logger.LogTrace($"Enrollment Response not available yet: {LogHandler.FlattenException(e)}");
+                }
+
+                await Task.Delay(1000);
+            }
+
+            return null;
+        }
+
+        public async Task<AnyCAPluginCertificate> GetSingleRecord(string caRequestID)
+        {
+            _logger.MethodEntry();
+            _requestManager = new RequestManager();
+            _logger.LogTrace($"Keyfactor CA ID: {caRequestID}");
+
+            try
+            {
+                var client = new HydrantIdClient(Config);
+                var certId = caRequestID.Substring(0, 36);
+                var certificateResponse = await client.GetSubmitGetCertificateAsync(certId);
+
+                _logger.LogTrace($"Single Cert JSON: {JsonConvert.SerializeObject(certificateResponse)}");
+                _logger.MethodExit();
+
+                return new AnyCAPluginCertificate
+                {
+                    CARequestID = caRequestID,
+                    Certificate = certificateResponse.Pem,
+                    Status = _requestManager.GetMapReturnStatus(certificateResponse.RevocationStatus),
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Could not retrieve cert for CARequestID {caRequestID}: {ex.Message}");
+
+                return new AnyCAPluginCertificate
+                {
+                    CARequestID = caRequestID,
+                    Status = _requestManager.GetMapReturnStatus(0) // Unknown
+                };
+            }
+        }
+
+        public Dictionary<string, PropertyConfigInfo> GetCAConnectorAnnotations()
+        {
+            _logger.MethodEntry();
+            _logger.MethodExit();
+            return HydrantIdCAProxyConfig.GetPluginAnnotations();
+        }
+
+        public Dictionary<string, PropertyConfigInfo> GetTemplateParameterAnnotations()
+        {
+            _logger.MethodEntry();
+            _logger.MethodExit();
+            return HydrantIdCAProxyConfig.GetTemplateParameterAnnotations();
+        }
+
     }
 }
