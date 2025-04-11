@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("HydrantIdCAProxy")]
+[assembly: AssemblyTitle("HydrantIdCAPlugin")]
 [assembly: AssemblyDescription("Keyfactor AnyGateway Implementation for the Google Cloud Private CA")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Keyfactor, Inc")]

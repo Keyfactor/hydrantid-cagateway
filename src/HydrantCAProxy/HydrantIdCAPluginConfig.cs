@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Keyfactor.Extensions.CAPlugin.HydrantId
 {
-    public class HydrantIdCAProxyConfig
+    public class HydrantIdCAPluginConfig
     {
         public const int DefaultPageSize = 100;
 

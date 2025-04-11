@@ -40,10 +40,10 @@ namespace Keyfactor.HydrantId.Client
             {
                 Log.MethodEntry();
                 
-                if (config.CAConnectionData.ContainsKey(HydrantIdCAProxyConfig.ConfigConstants.HydrantIdAuthId))
+                if (config.CAConnectionData.ContainsKey(HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthId))
                 {
                     ConfigProvider = config;
-                    BaseUrl = ConfigProvider.CAConnectionData[HydrantIdCAProxyConfig.ConfigConstants.HydrantIdBaseUrl].ToString();
+                    BaseUrl = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdBaseUrl].ToString();
                     RequestManager = new RequestManager();
                 }
             }
@@ -375,8 +375,8 @@ namespace Keyfactor.HydrantId.Client
                 Log.MethodEntry();
                 var bUrl = new Uri(BaseUrl);
 
-                var apiId = ConfigProvider.CAConnectionData[HydrantIdCAProxyConfig.ConfigConstants.HydrantIdAuthId].ToString();
-                var apiKey = ConfigProvider.CAConnectionData[HydrantIdCAProxyConfig.ConfigConstants.HydrantIdAuthKey].ToString();
+                var apiId = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthId].ToString();
+                var apiKey = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthKey].ToString();
 
                 var byteArray = new byte[20];
                 using (var rnd = RandomNumberGenerator.Create())

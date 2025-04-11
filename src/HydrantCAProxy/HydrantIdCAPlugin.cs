@@ -18,13 +18,12 @@ using System.Diagnostics;
 using Keyfactor.AnyGateway.Extensions;
 using Keyfactor.PKI;
 using System.Data;
-using Keyfactor.Extensions.CAPlugin.HydrantId;
 
-namespace Keyfactor.AnyGateway.Google
+namespace Keyfactor.Extensions.CAPlugin.HydrantId
 {
-    public class HydrantIdCAProxy : IAnyCAPlugin
+    public class HydrantIdCAPlugin : IAnyCAPlugin
     {
-        private static readonly ILogger _logger = LogHandler.GetClassLogger<HydrantIdCAProxy>();
+        private static readonly ILogger _logger = LogHandler.GetClassLogger<HydrantIdCAPlugin>();
         private RequestManager _requestManager;
         private IAnyCAPluginConfigProvider Config { get; set; }
         private ICertificateDataReader certDataReader;
@@ -48,7 +47,7 @@ namespace Keyfactor.AnyGateway.Google
             _logger.MethodEntry();
             _logger.LogDebug($"Validating GCP CAS CA Connection properties");
             var rawData = JsonConvert.SerializeObject(connectionInfo);
-            HydrantIdCAProxyConfig.Config config = JsonConvert.DeserializeObject<HydrantIdCAProxyConfig.Config>(rawData);
+            HydrantIdCAPluginConfig.Config config = JsonConvert.DeserializeObject<HydrantIdCAPluginConfig.Config>(rawData);
 
             _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdBaseUrl: {config.HydrantIdBaseUrl}");
             _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdAuthId: {config.HydrantIdAuthId}");
@@ -101,11 +100,11 @@ namespace Keyfactor.AnyGateway.Google
                     throw new Exception("HydrantIdClient Ping failed.");
                 }
 
-                _logger.LogTrace("HydrantIdCAProxy Ping succeeded.");
+                _logger.LogTrace("HydrantIdCAPlugin Ping succeeded.");
             }
             catch (Exception e)
             {
-                _logger.LogError($"Error during HydrantIdCAProxy Ping: {e.Message}");
+                _logger.LogError($"Error during HydrantIdCAPlugin Ping: {e.Message}");
                 throw;
             }
             finally
@@ -391,14 +390,14 @@ namespace Keyfactor.AnyGateway.Google
         {
             _logger.MethodEntry();
             _logger.MethodExit();
-            return HydrantIdCAProxyConfig.GetPluginAnnotations();
+            return HydrantIdCAPluginConfig.GetPluginAnnotations();
         }
 
         public Dictionary<string, PropertyConfigInfo> GetTemplateParameterAnnotations()
         {
             _logger.MethodEntry();
             _logger.MethodExit();
-            return HydrantIdCAProxyConfig.GetTemplateParameterAnnotations();
+            return HydrantIdCAPluginConfig.GetTemplateParameterAnnotations();
         }
 
     }

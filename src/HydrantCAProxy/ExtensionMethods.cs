@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Keyfactor.AnyGateway.Google
+namespace Keyfactor.Extensions.CAPlugin.HydrantId
 {    public static class ExtensionMethods
     {
         public static bool IsFullPathReadable(this string filePath)
