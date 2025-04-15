@@ -42,7 +42,24 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             }
         }
 
-        public void ValidateCAConnectionInfo(Dictionary<string, object> connectionInfo)
+        private static List<string> CheckRequiredValues(Dictionary<string, object> connectionInfo, params string[] args)
+        {
+            List<string> errors = new List<string>();
+            foreach (string s in args)
+                if (string.IsNullOrEmpty(connectionInfo[s] as string))
+                    errors.Add($"{s} is a required value");
+            return errors;
+        }
+
+        private static readonly Func<string, string> pemify = ss =>
+            ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + pemify(ss.Substring(64));
+
+        public async Task Ping()
+        {
+
+        }
+
+        public Task ValidateCAConnectionInfo(Dictionary<string, object> connectionInfo)
         {
             _logger.MethodEntry();
             _logger.LogDebug($"Validating GCP CAS CA Connection properties");
@@ -65,62 +82,15 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             }
 
             _logger.MethodExit();
+             return Ping();
         }
 
-        public void ValidateProductInfo(EnrollmentProductInfo productInfo,
-            Dictionary<string, object> connectionInfo)
+        public Task ValidateProductInfo(EnrollmentProductInfo productInfo, Dictionary<string, object> connectionInfo)
         {
             _logger.MethodEntry();
             //TODO: Evaluate Template (if avaiable) based on ProductInfo
             _logger.MethodExit();
-        }
-
-        private static List<string> CheckRequiredValues(Dictionary<string, object> connectionInfo, params string[] args)
-        {
-            List<string> errors = new List<string>();
-            foreach (string s in args)
-                if (string.IsNullOrEmpty(connectionInfo[s] as string))
-                    errors.Add($"{s} is a required value");
-            return errors;
-        }
-
-        private static readonly Func<string, string> pemify = ss =>
-            ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + pemify(ss.Substring(64));
-
-        public async Task Ping()
-        {
-            _logger.MethodEntry();
-            try
-            {
-                var client = new HydrantIdClient(Config);
-                var success = await client.Ping();
-
-                if (!success)
-                {
-                    throw new Exception("HydrantIdClient Ping failed.");
-                }
-
-                _logger.LogTrace("HydrantIdCAPlugin Ping succeeded.");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError($"Error during HydrantIdCAPlugin Ping: {e.Message}");
-                throw;
-            }
-            finally
-            {
-                _logger.MethodExit();
-            }
-        }
-
-        Task IAnyCAPlugin.ValidateCAConnectionInfo(Dictionary<string, object> connectionInfo)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IAnyCAPlugin.ValidateProductInfo(EnrollmentProductInfo productInfo, Dictionary<string, object> connectionInfo)
-        {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
 
@@ -131,7 +101,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
 
             var ids = policies
                 .Where(p => p.Id.HasValue)
-                .Select(p => p.Id.Value.ToString())
+                .Select(p => p.Name.ToString())
                 .ToList();
 
             return ids;

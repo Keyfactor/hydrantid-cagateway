@@ -27,6 +27,9 @@ using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Keyfactor.Extensions.CAPlugin.HydrantId;
 using Keyfactor.AnyGateway.Extensions;
+using HawkNet;
+using Microsoft.VisualBasic;
+using System.Globalization;
 
 namespace Keyfactor.HydrantId.Client
 {
@@ -374,63 +377,60 @@ namespace Keyfactor.HydrantId.Client
             {
                 Log.MethodEntry();
                 var bUrl = new Uri(BaseUrl);
+                ApiId = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthId].ToString();
 
-                var apiId = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthId].ToString();
-                var apiKey = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthKey].ToString();
+                var credentials = new HawkCredential
+                {
+                    Id = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthId].ToString(),
+                    Key = ConfigProvider.CAConnectionData[HydrantIdCAPluginConfig.ConfigConstants.HydrantIdAuthKey].ToString(),
+                    Algorithm = "sha256"
+                };
 
                 var byteArray = new byte[20];
+                //Generate a cryptographically random set of bytes
                 using (var rnd = RandomNumberGenerator.Create())
                 {
                     rnd.GetBytes(byteArray);
                 }
 
-                var nonce = Convert.ToBase64String(byteArray);
-                var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+                var nOnce = Convert.ToBase64String(byteArray);
+                var date = DateTime.Now;
+                var ts = Hawk.ConvertToUnixTimestamp(date);
+                var mac = Hawk.CalculateMac(bUrl.Host + ":" + bUrl.Port, method, new Uri(url), "",
+                    ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
+                var authorization =
+                    $"id=\"{ApiId}\", ts=\"{ts}\", nonce=\"{nOnce}\", mac=\"{mac}\"";
 
-                // Build normalized string according to Hawk spec (beware of spacing/line endings!)
-                var uri = new Uri(url);
-                var requestPath = uri.PathAndQuery;
-                var normalized = new StringBuilder();
-                normalized.AppendLine("hawk.1.header");
-                normalized.AppendLine(timestamp);
-                normalized.AppendLine(nonce);
-                normalized.AppendLine(method.ToUpperInvariant());
-                normalized.AppendLine(requestPath);
-                normalized.AppendLine(uri.Host);
-                normalized.AppendLine(uri.Port.ToString());
-                normalized.AppendLine(); // No hash
-                normalized.AppendLine(); // No ext
-                normalized.AppendLine(); // No app
-                normalized.Append("");  // No dlg
 
-                var normalizedString = normalized.ToString();
+                var clientHandler = new HttpClientHandler(); // Replaces WebRequestHandler in .NET 6
 
-                // Calculate MAC using HMACSHA256
-                byte[] keyBytes = Encoding.UTF8.GetBytes(apiKey);
-                byte[] dataBytes = Encoding.UTF8.GetBytes(normalizedString);
-                string mac;
-
-                using (var hmac = new HMACSHA256(keyBytes))
+                var returnClient = new HttpClient(clientHandler, disposeHandler: true)
                 {
-                    var hashBytes = hmac.ComputeHash(dataBytes);
-                    mac = Convert.ToBase64String(hashBytes);
-                }
+                    BaseAddress = bUrl
+                };
 
-                var authorization = $"Hawk id=\"{apiId}\", ts=\"{timestamp}\", nonce=\"{nonce}\", mac=\"{mac}\"";
-                Log.LogTrace($"Authorization: {authorization}");
+                returnClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                returnClient.DefaultRequestHeaders.Add("Authorization", "Hawk " + authorization);
 
-                var handler = new HttpClientHandler();
-                var client = new HttpClient(handler, true) { BaseAddress = bUrl };
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                client.DefaultRequestHeaders.Add("Authorization", authorization);
-
-                return client;
+                return returnClient;
             }
             catch (Exception e)
             {
-                Log.LogError($"Error Occurred in ConfigureRestClient: {e}");
+                Log.LogError($"Error Occured in HydrantIdClient.ConfigureRestClient: {e.Message}");
                 throw;
             }
         }
+
+        private static byte[] ConvertHexStringToBytes(string hex)
+        {
+            if (hex.Length % 2 != 0)
+                throw new ArgumentException("Invalid length for hex string.");
+
+            var bytes = new byte[hex.Length / 2];
+            for (int i = 0; i < bytes.Length; i++)
+                bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            return bytes;
+        }
     }
+
 }

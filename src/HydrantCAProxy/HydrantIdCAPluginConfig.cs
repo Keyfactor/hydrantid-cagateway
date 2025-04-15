@@ -25,8 +25,8 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
         public class ConfigConstants
         {
             public static string HydrantIdBaseUrl = "HydrantIdBaseUrl";
-            public static string HydrantIdAuthId = "AuthId";
-            public static string HydrantIdAuthKey = "AuthKey";
+            public static string HydrantIdAuthId = "HydrantIdAuthId";
+            public static string HydrantIdAuthKey = "HydrantIdAuthKey";
             public static string DefaultPageSize = "DefaultPageSize";
         }
 
