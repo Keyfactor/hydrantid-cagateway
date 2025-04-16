@@ -21,6 +21,7 @@ using Keyfactor.Logging;
 using LogHandler = Keyfactor.Logging.LogHandler;
 using Keyfactor.AnyGateway.Extensions;
 using Keyfactor.PKI;
+using Keyfactor.PKI.Enums.EJBCA;
 
 namespace Keyfactor.HydrantId
 {
@@ -235,7 +236,7 @@ namespace Keyfactor.HydrantId
                 {
                     return new EnrollmentResult
                     {
-                        Status = 30, //failure
+                        Status = (int)EndEntityStatus.FAILED, //failure
                         StatusMessage = $"Enrollment Failed with could not get the certificate from the request tracking id"
                     };
                 }
@@ -244,7 +245,7 @@ namespace Keyfactor.HydrantId
                 {
                     return new EnrollmentResult
                     {
-                        Status = 30, //failure
+                        Status = (int)EndEntityStatus.FAILED, //failure
                         StatusMessage = $"Enrollment Failed with could not get the certificate from the request tracking id"
                     };
                 }
@@ -253,10 +254,10 @@ namespace Keyfactor.HydrantId
                 {
                     return new EnrollmentResult
                     {
-                        Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
+                        Status = (int)EndEntityStatus.GENERATED, //success
                         CARequestID = enrollmentResult.Id.ToString(),
                         Certificate = cert.Certificate,
-                        StatusMessage = $"Order Successfully Created With Product {cert.ProductID}"
+                        StatusMessage = $"Order Successfully Created"
                     };
                 }
 
@@ -285,9 +286,9 @@ namespace Keyfactor.HydrantId
                 var ou = string.Empty;
 
                 Log.LogTrace($"CSR: {csr}");
-                var cert = "-----BEGIN CERTIFICATE REQUEST-----\r\n";
-                cert = cert + Pemify(csr);
-                cert = cert + "\r\n-----END CERTIFICATE REQUEST-----";
+                //var cert = "-----BEGIN CERTIFICATE REQUEST-----\r\n";
+                var cert =  csr;
+                //cert = cert + "\r\n-----END CERTIFICATE REQUEST-----";
                 Log.LogTrace($"cert: {cert}");
 
                 var reader = new PemReader(new StringReader(cert));

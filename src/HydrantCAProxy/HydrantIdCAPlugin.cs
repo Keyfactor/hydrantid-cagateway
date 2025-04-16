@@ -18,6 +18,7 @@ using System.Diagnostics;
 using Keyfactor.AnyGateway.Extensions;
 using Keyfactor.PKI;
 using System.Data;
+using System.Drawing;
 
 namespace Keyfactor.Extensions.CAPlugin.HydrantId
 {
@@ -259,7 +260,9 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 }
 
                 var cert = await GetSingleRecord(csrTrackingResponse.Id.ToString());
-                return _requestManager.GetEnrollmentResult(csrTrackingResponse, cert);
+
+                var result = _requestManager.GetEnrollmentResult(csrTrackingResponse, cert);
+                return result;
             }
             finally
             {
