@@ -34,21 +34,24 @@ namespace Keyfactor.HydrantId
             try
             {
                 Log.MethodEntry();
-                PKIConstants.Microsoft.RequestDisposition returnStatus;
+                int returnStatus;
                 Log.LogTrace($"hydrantIdStatus: {hydrantIdStatus}");
                 switch (hydrantIdStatus)
                 {
                     case RevocationStatusEnum.Valid:
-                        returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;
+                        returnStatus = (int)EndEntityStatus.GENERATED;
                         break;
                     case RevocationStatusEnum.Pending:
-                        returnStatus = PKIConstants.Microsoft.RequestDisposition.PENDING;
+                        returnStatus = (int)EndEntityStatus.INPROCESS;
                         break;
                     case RevocationStatusEnum.Revoked:
-                        returnStatus = PKIConstants.Microsoft.RequestDisposition.REVOKED;
+                        returnStatus =(int)EndEntityStatus.REVOKED;
+                        break;
+                    case RevocationStatusEnum.Failed:
+                        returnStatus = (int)EndEntityStatus.FAILED;
                         break;
                     default:
-                        returnStatus = PKIConstants.Microsoft.RequestDisposition.UNKNOWN;
+                        returnStatus = (int)EndEntityStatus.FAILED;
                         break;
                 }
                 Log.MethodExit();

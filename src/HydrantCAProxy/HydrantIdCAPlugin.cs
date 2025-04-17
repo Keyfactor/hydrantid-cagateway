@@ -19,6 +19,7 @@ using Keyfactor.AnyGateway.Extensions;
 using Keyfactor.PKI;
 using System.Data;
 using System.Drawing;
+using Keyfactor.PKI.Enums.EJBCA;
 
 namespace Keyfactor.Extensions.CAPlugin.HydrantId
 {
@@ -132,8 +133,8 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                     var certStatus = _requestManager.GetMapReturnStatus(item.RevocationStatus);
                     _logger.LogTrace($"Numeric Status: {certStatus}");
 
-                    if (certStatus != Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) &&
-                        certStatus != Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                    if (certStatus != Convert.ToInt32(EndEntityStatus.GENERATED) &&
+                        certStatus != Convert.ToInt32(EndEntityStatus.REVOKED))
                         continue;
 
                     _logger.LogTrace($"Product Id: {item.Policy.Name}");
@@ -242,7 +243,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 {
                     return new EnrollmentResult
                     {
-                        Status = 30,
+                        Status = (int)EndEntityStatus.FAILED,
                         StatusMessage = $"Enrollment Failed with error {enrollmentResponse.ErrorReturn.Error}"
                     };
                 }
@@ -254,7 +255,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 {
                     return new EnrollmentResult
                     {
-                        Status = 30,
+                        Status = (int)EndEntityStatus.FAILED,
                         StatusMessage = "Certificate may still be pending in Hydrant and is not ready for download"
                     };
                 }
@@ -354,7 +355,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 return new AnyCAPluginCertificate
                 {
                     CARequestID = caRequestID,
-                    Status = _requestManager.GetMapReturnStatus(0) // Unknown
+                    Status = _requestManager.GetMapReturnStatus(0) // Failed
                 };
             }
         }
