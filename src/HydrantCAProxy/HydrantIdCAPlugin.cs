@@ -207,7 +207,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             {
                 CertRequestResult enrollmentResponse = null;
 
-                if (enrollmentType == EnrollmentType.New || enrollmentType == EnrollmentType.Reissue)
+                if (enrollmentType == EnrollmentType.New)
                 {
                     _logger.LogTrace("Entering New Enrollment");
                     var policyListResult = await client.GetPolicyList();
@@ -221,22 +221,43 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
 
                     enrollmentResponse = await client.GetSubmitEnrollmentAsync(enrollmentRequest);
                 }
-                else if (enrollmentType == EnrollmentType.Renew)
+                else if (enrollmentType == EnrollmentType.RenewOrReissue)
                 {
-                    _logger.LogTrace("Entering Renew...");
-
-                    var renewRequest = _requestManager.GetRenewalRequest(csr, false);
-                    _logger.LogTrace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
+                    _logger.LogTrace("Entering Renew/Reissue Logic...");
 
                     var sn = productInfo.ProductParameters["PriorCertSN"];
                     _logger.LogTrace($"Prior Cert Serial Number: {sn}");
 
-                    //var priorCert = certDataReader.(DataConversion.HexToBytes(sn));
                     var certificateId = await certDataReader.GetRequestIDBySerialNumber(sn);
-                                      
-                    _logger.LogTrace($"Renewal CA RequestId: {certificateId}");
 
-                    enrollmentResponse = await client.GetSubmitRenewalAsync(certificateId, renewRequest);
+                    //1) Get Single Certificate for the previous certificate
+                    var previousCert = await GetSingleRecord(certificateId);
+
+                    //2) Look up the Expiration Date for that cert
+                    var previousX509 = new X509Certificate2(Encoding.ASCII.GetBytes(previousCert.Certificate));
+                    var expiration = previousX509.NotAfter;
+                    var now = DateTime.UtcNow;
+
+                    //3) Determine if it is a Renewal vs Re-Issue
+                    var isRenewal = (expiration - now).TotalDays <= Convert.ToInt16(productInfo.ProductParameters["RenewalDays"]);
+                    _logger.LogTrace($"Certificate Expiration: {expiration}, Current Time: {now}, IsRenewal: {isRenewal}");
+
+                    if (isRenewal)
+                    {
+                        _logger.LogTrace("Proceeding with Renewal Request...");
+                        var renewRequest = _requestManager.GetRenewalRequest(csr, false);
+                        _logger.LogTrace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
+                        enrollmentResponse = await client.GetSubmitRenewalAsync(certificateId, renewRequest);
+                    }
+                    else
+                    {
+                        _logger.LogTrace("Proceeding with Re-Issue Request...");
+                        var policyListResult = await client.GetPolicyList();
+                        var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
+                        var reissueRequest = _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
+                        _logger.LogTrace($"Re-Issue Request JSON: {JsonConvert.SerializeObject(reissueRequest)}");
+                        enrollmentResponse = await client.GetSubmitEnrollmentAsync(reissueRequest);
+                    }
                 }
 
                 if (enrollmentResponse?.ErrorReturn?.Status == "Failure")

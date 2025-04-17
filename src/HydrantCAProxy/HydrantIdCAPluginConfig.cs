@@ -41,6 +41,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
         {
             public const string ValidityPeriod = "ValidityPeriod";
             public const string ValidityUnits = "ValidityUnits";
+            public const string RenewalDays = "RenewalDays";
         }
 
         public static Dictionary<string, PropertyConfigInfo> GetPluginAnnotations()
@@ -87,6 +88,13 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                     Comments = $"The desired lifetime time value some number indicating days, months or years.",
                     Hidden = false,
                     DefaultValue = 1,
+                    Type = "Number"
+                },
+                [EnrollmentParametersConstants.RenewalDays] = new PropertyConfigInfo()
+                {
+                    Comments = $"The window that determines whether it is a renewal vs a re-issue.",
+                    Hidden = false,
+                    DefaultValue = 30,
                     Type = "Number"
                 }
             };
