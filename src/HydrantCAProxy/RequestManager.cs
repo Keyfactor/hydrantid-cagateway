@@ -22,6 +22,7 @@ using LogHandler = Keyfactor.Logging.LogHandler;
 using Keyfactor.AnyGateway.Extensions;
 using Keyfactor.PKI;
 using Keyfactor.PKI.Enums.EJBCA;
+using System.Linq;
 
 namespace Keyfactor.HydrantId
 {
@@ -152,7 +153,7 @@ namespace Keyfactor.HydrantId
                 Validity = GetValidity(productInfo.ProductParameters["ValidityPeriod"], Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
             };
 
-            if (san.ContainsKey("dnsname"))
+            if (san!= null && san?.Count>0)
             {
                 request.SubjectAltNames = GetSansRequest(san);
             }
@@ -213,20 +214,28 @@ namespace Keyfactor.HydrantId
             {
                 Log.MethodEntry();
                 var san = new CertRequestBodySubjectAltNames();
-                List<string> dnsNames = new List<string>();
-                foreach (var v in sans["dnsname"])
-                {
-                    dnsNames.Add(v);
-                }
-                san.Dnsname = dnsNames;
+
+                if (sans.TryGetValue("dnsname", out var dnsNames))
+                    san.Dnsname = dnsNames.ToList();
+
+                if (sans.TryGetValue("ipaddress", out var ipAddresses))
+                    san.Ipaddress = ipAddresses.ToList();
+
+                if (sans.TryGetValue("rfc822name", out var rfcNames))
+                    san.Rfc822Name = rfcNames.ToList();
+
+                if (sans.TryGetValue("upn", out var upns))
+                    san.Upn = upns.ToList();
+
                 return san;
             }
             catch (Exception e)
             {
-                Log.LogError($"Error Occured in RequestManager.GetSansRequest: {e.Message}");
+                Log.LogError($"Error occurred in RequestManager.GetSansRequest: {e.Message}");
                 throw;
             }
         }
+
 
         public EnrollmentResult
             GetEnrollmentResult(
