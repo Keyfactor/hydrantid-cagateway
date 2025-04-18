@@ -310,12 +310,12 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 var revokeResponse = await client.GetSubmitRevokeCertificateAsync(hydrantId, revokeReason);
                 _logger.LogTrace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
 
-                return 1;
+                return (int)EndEntityStatus.REVOKED;
             }
             catch (Exception e)
             {
                 _logger.LogError($"Error during revoke process: {e.Message}");
-                return -1;
+                return (int)EndEntityStatus.FAILED;
             }
             finally
             {
