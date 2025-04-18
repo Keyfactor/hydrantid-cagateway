@@ -152,7 +152,7 @@ namespace Keyfactor.HydrantId
                 Validity = GetValidity(productInfo.ProductParameters["ValidityPeriod"], Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
             };
 
-            if (san.ContainsKey("dns"))
+            if (san.ContainsKey("dnsname"))
             {
                 request.SubjectAltNames = GetSansRequest(san);
             }
@@ -214,7 +214,7 @@ namespace Keyfactor.HydrantId
                 Log.MethodEntry();
                 var san = new CertRequestBodySubjectAltNames();
                 List<string> dnsNames = new List<string>();
-                foreach (var v in sans["dns"])
+                foreach (var v in sans["dnsname"])
                 {
                     dnsNames.Add(v);
                 }
