@@ -36,5 +36,11 @@ namespace Keyfactor.HydrantId.Client.Models
         [JsonProperty("DC", NullValueHandling = NullValueHandling.Ignore)]
         public List<string> Dc { get; set; }
 
+        [JsonProperty("E", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Email { get; set; }
+
+        [JsonProperty("AEID", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Aeid { get; set; }
+
     }
 }

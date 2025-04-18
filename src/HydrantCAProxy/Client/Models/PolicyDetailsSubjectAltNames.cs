@@ -16,14 +16,14 @@ namespace Keyfactor.HydrantId.Client.Models
 {
     public class PolicyDetailsSubjectAltNames : IPolicyDetailsSubjectAltNames
     {
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(TagEnumConverter))]
         public enum TagEnum
         {
             [EnumMember(Value = "DNSNAME")] DnsName = 1,
 
             [EnumMember(Value = "IPADDRESS")] IpAddress = 2,
 
-            [EnumMember(Value = "RFS822NAME")] Rfs822Name = 3,
+            [EnumMember(Value = "RFC822NAME")] Rfc822Name = 3,
 
             [EnumMember(Value = "UPN")] Upn = 4
         }

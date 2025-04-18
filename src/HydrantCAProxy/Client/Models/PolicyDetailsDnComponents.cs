@@ -31,7 +31,11 @@ namespace Keyfactor.HydrantId.Client.Models
 
             [EnumMember(Value = "C")] C = 6,
 
-            [EnumMember(Value = "DC")] Dc = 7
+            [EnumMember(Value = "DC")] Dc = 7,
+
+            [EnumMember(Value = "E")] Email = 8,
+
+            [EnumMember(Value = "AEID")] Aeid = 9
         }
 
         [JsonProperty("tag", NullValueHandling = NullValueHandling.Ignore)]

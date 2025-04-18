@@ -20,6 +20,8 @@ namespace Keyfactor.HydrantId.Interfaces
         string St { get;set; }
         string C { get;set; }
         List<string> Dc { get;set; }
+        List<string> Email { get; set; }
+        List<string> Aeid { get; set; }
 
     }
 }
