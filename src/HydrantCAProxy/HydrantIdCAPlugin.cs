@@ -16,9 +16,7 @@ using LogHandler = Keyfactor.Logging.LogHandler;
 using Keyfactor.HydrantId.Client.Models;
 using System.Diagnostics;
 using Keyfactor.AnyGateway.Extensions;
-using Keyfactor.PKI;
 using System.Data;
-using System.Drawing;
 using Keyfactor.PKI.Enums.EJBCA;
 
 namespace Keyfactor.Extensions.CAPlugin.HydrantId

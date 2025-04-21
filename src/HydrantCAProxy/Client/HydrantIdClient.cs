@@ -28,7 +28,6 @@ using Microsoft.Extensions.Logging;
 using Keyfactor.Extensions.CAPlugin.HydrantId;
 using Keyfactor.AnyGateway.Extensions;
 using HawkNet;
-using Microsoft.VisualBasic;
 using System.Globalization;
 
 namespace Keyfactor.HydrantId.Client

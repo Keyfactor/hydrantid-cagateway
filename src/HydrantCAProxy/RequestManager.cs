@@ -20,7 +20,6 @@ using Microsoft.Extensions.Logging;
 using Keyfactor.Logging;
 using LogHandler = Keyfactor.Logging.LogHandler;
 using Keyfactor.AnyGateway.Extensions;
-using Keyfactor.PKI;
 using Keyfactor.PKI.Enums.EJBCA;
 using System.Linq;
 
