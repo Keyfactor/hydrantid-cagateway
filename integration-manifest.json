@@ -1,12 +1,44 @@
 {
-  "$schema": "https://keyfactor.github.io/integration-manifest-schema.json",
-  "integration_type": "ca-gateway",
-  "name": "HydrantId",
-  "status": "production",
-  "description": "HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA",
-  "link_github": true,
-  "update_catalog": true,
-  "support_level": "kf-supported",
-  "release_dir": "HydrantIdProxy/src/HydrantIdProxy/bin/Release"
-
+    "$schema": "https://keyfactor.github.io/v2/integration-manifest-schema.json",
+    "name": "HydrantId AnyCA REST plugin",
+    "release_dir": "src/HydrantCAProxy/bin/Release/net6.0",
+    "description": "AnyCA Gateway REST plugin that extends HydrantId Certificate Authority Service to Keyfactor Command",
+    "status": "production",
+    "integration_type": "anyca-plugin",
+    "support_level": "kf-supported",
+    "link_github": true,
+    "update_catalog": true,
+    "gateway_framework": "24.2",
+    "about": {
+        "carest": {
+            "ca_plugin_config": [
+                {
+                    "name": "HydrantIdBaseUrl",
+                    "description": "The Base URL For the HydrantId Endpoint similar to https://acm-stage.hydrantid.com.  Get this from HydrantId."
+                },
+                {
+                    "name": "HydrantIdAuthId",
+                    "description": "The AuthId Obtained from HydrantId."
+                },
+                {
+                    "name": "HydrantIdAuthKey",
+                    "description": "The AuthKey Obtained from HydrantId."
+                }
+            ],
+            "enrollment_config": [
+                {
+                    "name": "ValidityPeriod",
+                    "description": "The desired lifetime time period could be Days, Months or Years."
+                },                
+		{
+                    "name": "ValidityUnits",
+                    "description": "The desired lifetime time value some number indicating days, months or years."
+                },
+                {
+                    "name": "RenewalDays",
+                    "description": "The window that determines whether it is a renewal vs a re-issue."
+                }		
+            ]
+        }
+    }
 }
