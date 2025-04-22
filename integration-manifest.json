@@ -29,15 +29,15 @@
                 {
                     "name": "ValidityPeriod",
                     "description": "The desired lifetime time period could be Days, Months or Years."
-                },                
-		{
+                },
+                {
                     "name": "ValidityUnits",
                     "description": "The desired lifetime time value some number indicating days, months or years."
                 },
                 {
                     "name": "RenewalDays",
                     "description": "The window that determines whether it is a renewal vs a re-issue."
-                }		
+                }
             ]
         }
     }
