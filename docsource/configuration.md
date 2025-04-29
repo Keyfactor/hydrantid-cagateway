@@ -53,7 +53,7 @@ HydrantID uses [HAWK Authentication](https://github.com/hueniverse/hawk) to secu
 ##### Required Fields in Authorization Header:
 ```text
 Hawk id="API_ID", ts="TIMESTAMP", nonce="RANDOM", mac="HMAC_SIGNATURE"
-
+```
 
 ### Root CA Configuration
 
