@@ -1,223 +1,176 @@
+<h1 align="center" style="border-bottom: none">
+    HydrantId AnyCA Gateway REST Plugin
+</h1>
 
-# HydrantId
+<p align="center">
+  <!-- Badges -->
+<img src="https://img.shields.io/badge/integration_status-production-3D1973?style=flat-square" alt="Integration Status: production" />
+<a href="https://github.com/Keyfactor/hydrantid-cagateway/releases"><img src="https://img.shields.io/github/v/release/Keyfactor/hydrantid-cagateway?style=flat-square" alt="Release" /></a>
+<img src="https://img.shields.io/github/issues/Keyfactor/hydrantid-cagateway?style=flat-square" alt="Issues" />
+<img src="https://img.shields.io/github/downloads/Keyfactor/hydrantid-cagateway/total?style=flat-square&label=downloads&color=28B905" alt="GitHub Downloads (all assets, all releases)" />
+</p>
 
-HydrantId operates a PKI as a service platform for customers around the globe.  The AnyGateway solution for HydrantId is designed to allow Keyfactor Command the ability to: - Sync certificates issued from the CA - Request new certificates from the CA - Revoke certificates directly from Keyfactor Command -Renew or Reissue Certificates from the CA
+<p align="center">
+  <!-- TOC -->
+  <a href="#support">
+    <b>Support</b>
+  </a> 
+  ·
+  <a href="#requirements">
+    <b>Requirements</b>
+  </a>
+  ·
+  <a href="#installation">
+    <b>Installation</b>
+  </a>
+  ·
+  <a href="#license">
+    <b>License</b>
+  </a>
+  ·
+  <a href="https://github.com/orgs/Keyfactor/repositories?q=anycagateway">
+    <b>Related Integrations</b>
+  </a>
+</p>
 
-#### Integration status: Production - Ready for use in production environments.
 
-## About the Keyfactor AnyCA Gateway DCOM Connector
+HydrantId operates a PKI as a service platform for customers around the globe. The AnyGateway solution for HydrantId is designed to allow Keyfactor Command:
 
-This repository contains an AnyCA Gateway Connector, which is a plugin to the Keyfactor AnyGateway. AnyCA Gateway Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
+* CA Sync:
+    * Download all certificates issued by connected Enterprise tier CAs in HydrantId (full sync).
+* Certificate enrollment for all published HydrantId Certificate SKUs:
+    * Support certificate enrollment (new keys/certificate).
+* Certificate revocation:
+    * Request revocation of a previously issued certificate.
 
-## Support for HydrantId
+## Compatibility
 
-HydrantId is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket via the Keyfactor Support Portal at https://support.keyfactor.com
+The HydrantId AnyCA Gateway REST plugin is compatible with the Keyfactor AnyCA Gateway REST 24.2 and later.
 
-###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+## Support
+The HydrantId AnyCA Gateway REST plugin is supported by Keyfactor for Keyfactor customers. If you have a support issue, please open a support ticket with your Keyfactor representative. If you have a support issue, please open a support ticket via the Keyfactor Support Portal at https://support.keyfactor.com. 
+
+> To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+
+## Requirements
+
+### 🔐 HydrantID API Key Setup Guide
+
+This guide explains how to generate and use an API Key ID and Secret in HydrantID for authenticated API access.
 
 ---
 
+#### 📍 Where to Find API Key Management
+
+1. **Log in** to your HydrantID instance.
+   - Example: https://acm-stage.hydrantid.com
+
+2. Click your **user profile icon** (top right) and select **"Profile"**.
+
+3. In the **Profile** page, scroll to the section labeled `API Keys`.
 
 ---
 
+#### ➕ Add a New API Key
 
-
-
-
-## Keyfactor AnyCA Gateway Framework Supported
-The Keyfactor gateway framework implements common logic shared across various gateway implementations and handles communication with Keyfactor Command. The gateway framework hosts gateway implementations or plugins that understand how to communicate with specific CAs. This allows you to integrate your third-party CAs with Keyfactor Command such that they behave in a manner similar to the CAs natively supported by Keyfactor Command.
-
-
-
-
-This gateway extension was compiled against version  of the AnyCA Gateway DCOM Framework.  You will need at least this version of the framework Installed. If you have a later AnyGateway Framework Installed you will probably need to add binding redirects in the CAProxyServer.exe.config file to make things work properly.
-
-
-[Keyfactor CAGateway Install Guide](https://software.keyfactor.com/Guides/AnyGateway_Generic/Content/AnyGateway/Introduction.htm)
-
-
+1. Click **"ADD API KEY"** (top right of the API Keys section).
+2. A new API Key will be generated with:
+   - A unique **API ID**
+   - A **Secret API Key** — copy it immediately as it is only shown once.
 
 ---
 
+#### 🧾 Notes on API Keys
 
-*** 
-# Getting Started
-## Standard Gateway Installation
-To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the HydrantId plugin. This integration was tested with Keyfactor 9.3.0.0.
-To install the gateway follow these instructions.
+- **ID** = what you'll pass in the HAWK `id` field
+- **Key** = secret used to generate HAWK signature
+- Each key shows `Created` and `Last Used` timestamps for traceability
 
-1) Gateway Server - run the installation .msi obtained from Keyfactor
+---
 
-2) Gateway Server - If you have the rights to install the database (usually in a Non SQL PAAS Environment) Using Powershell, run the following command to create the gateway database.
+#### 🔐 Using the API ID and Key with HAWK
 
-   **SQL Server Windows Auth**
+HydrantID uses [HAWK Authentication](https://github.com/hueniverse/hawk) to secure its API.
+
+##### Required Fields in Authorization Header:
+```text
+Hawk id="API_ID", ts="TIMESTAMP", nonce="RANDOM", mac="HMAC_SIGNATURE"
+
+### Root CA Configuration
+
+Both the Keyfactor Command and AnyCA Gateway REST servers must trust the root CA, and if applicable, any subordinate CAs for all features to work as intended. Download the CA Certificate (and chain, if applicable) from HydrantId, and import them into the appropriate certificate store on the AnyCA Gateway REST server.
+
+* **Windows** - If the AnyCA Gateway REST is running on a Windows host, the root CA and applicable subordinate CAs must be imported into the Windows certificate store. The certificates can be imported using the Microsoft Management Console (MMC) or PowerShell. 
+* **Linux** - If the AnyCA Gateway REST is running on a Linux host, the root CA and applicable subordinate CAs must be present in the root CA certificate store. The location of this store varies per distribution, but is most commonly `/etc/ssl/certs/ca-certificates.crt`. The following is documentation on some popular distributions.
+    * [Ubuntu - Managing CA certificates](https://ubuntu.com/server/docs/install-a-root-ca-certificate-in-the-trust-store)
+    * [RHEL 9 - Using shared system certificates](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/securing_networks/using-shared-system-certificates_securing-networks#using-shared-system-certificates_securing-networks)
+    * [Fedora - Using Shared System Certificates](https://docs.fedoraproject.org/en-US/quick-docs/using-shared-system-certificates/)
+
+> The root CA and intermediate CAs must be trusted by both the Command server _and_ AnyCA Gateway REST server.
+
+## Installation
+
+1. Install the AnyCA Gateway REST per the [official Keyfactor documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/InstallIntroduction.htm).
+
+2. On the server hosting the AnyCA Gateway REST, download and unzip the latest [HydrantId AnyCA Gateway REST plugin](https://github.com/Keyfactor/hydrantid-cagateway/releases/latest) from GitHub.
+
+3. Copy the unzipped directory (usually called `net6.0`) to the Extensions directory:
+
+    ```shell
+    Program Files\Keyfactor\AnyCA Gateway\AnyGatewayREST\net6.0\Extensions
     ```
-    %InstallLocation%\DatabaseManagementConsole.exe create -s [database server name] -d [database name]
-    ```
-   Note if you are using SQL Authentication, then you need to run
-   
-   **SQL Server SQL Authentication**
 
-   ```
-   %InstallLocation%\DatabaseManagementConsole.exe create -s [database server name] -d [database name] -u [sql user] -p [sql password]
-   ```
+    > The directory containing the HydrantId AnyCA Gateway REST plugin DLLs (`net6.0`) can be named anything, as long as it is unique within the `Extensions` directory.
 
-   If you do **not** have rights to created the database then have the database created ahead of time by the support team and just populate the database
+4. Restart the AnyCA Gateway REST service.
 
-   ## Populate commands below
+5. Navigate to the AnyCA Gateway REST portal and verify that the Gateway recognizes the HydrantId plugin by hovering over the ⓘ symbol to the right of the Gateway on the top left of the portal.
 
-   **Windows Authentication**
+## Configuration
 
-   ```
-   %InstallLocation%\DatabaseManagementConsole.exe populate -s [database server name] -d [database name]
-   ```
+1. Follow the [official AnyCA Gateway REST documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCA-Gateway.htm) to define a new Certificate Authority, and use the notes below to configure the **Gateway Registration** and **CA Connection** tabs:
 
-   **SQL Server SQL Authentication** 
+    * **Gateway Registration**
 
-   ```
-   %InstallLocation%\DatabaseManagementConsole.exe populate -s [database server name] -d [database name] -u [sql user] -p [sql password]
-   ```
+        The Gateway Registration tab configures the root or issuing CA certificate for the respective CA in HydrantId. The certificate selected here should be the issuing CA identified in the [Root CA Configuration](#root-ca-configuration) step.
 
-3) Gateway Server - run the following Powershell to import the Cmdlets
+    * **CA Connection**
 
-   C:\Program Files\Keyfactor\Keyfactor AnyGateway\ConfigurationCmdlets.dll (must be imported into Powershell)
-   ```ps
-   Import-Module C:\Program Files\Keyfactor\Keyfactor AnyGateway\ConfigurationCmdlets.dll
-   ```
+        Populate using the configuration fields collected in the [requirements](#requirements) section.
 
-4) Gateway Server - Run the Following Powershell script to set the gateway encryption cert
+        * **HydrantIdBaseUrl** - The Base URL For the HydrantId Endpoint similar to https://acm-stage.hydrantid.com.  Get this from HydrantId. 
+        * **HydrantIdAuthId** - The AuthId Obtained from HydrantId. 
+        * **HydrantIdAuthKey** - The AuthKey Obtained from HydrantId. 
 
-   ### Set-KeyfactorGatewayEncryptionCert
-   This cmdlet will generate a self-signed certificate used to encrypt the database connection string. It populates a registry value with the serial number of the certificate to be used. The certificate is stored in the LocalMachine Personal Store and the registry key populated is:
+2. Define [Certificate Profiles](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCP-Gateway.htm) and [Certificate Templates](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCA-Gateway.htm) for the Certificate Authority as required. One Certificate Profile must be defined per Certificate Template. It's recommended that each Certificate Profile be named after the Product ID.
 
-   ```HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\CertSvcProxy\Parameters\EncryptSerialNumber```
-   No parameters are required to run this cmdlet.
+    The GCP CAS AnyCA Gateway REST plugin downloads all Certificate Templates in the configured GCP Region/Project and interprets them as 'Product IDs' in the Gateway Portal.
 
-5) Gateway Server - Run the following Powershell Script to Set the Database Connection
+    > For example, if the connected GCP project has the following Certificate Templates:
+    > 
+    > * `ServerAuth`
+    > * `ClientAuth`
+    >
+    > The `Edit Templates` > `Product ID` dialog dropdown will show the following available 'ProductIDs':
+    >
+    > * `Default` -> Don't use a certificate template when enrolling certificates with this Template.
+    > * `ServerAuth` -> Use the `ServerAuth` certificate template in GCP when enrolling certificates with this Template.
+    > * `ClientAuth` -> Use the `ClientAuth` certificate template in GCP when enrolling certificates with this Template.
 
-   ### Set-KeyfactorGatewayDatabaseConnection
-   This cmdlet will set and encrypt the database connection string used by the AnyGateway service. 
+3. Follow the [official Keyfactor documentation](https://software.keyfactor.com/Guides/AnyCAGatewayREST/Content/AnyCAGatewayREST/AddCA-Keyfactor.htm) to add each defined Certificate Authority to Keyfactor Command and import the newly defined Certificate Templates.
 
-   **Windows Authentication**
-   ```ps
-   Set-KeyfactorGatewayDatabaseConnection -Server [db server name] -Database [database name]
-   ```
+4. In Keyfactor Command (v12.3+), for each imported Certificate Template, follow the [official documentation](https://software.keyfactor.com/Core-OnPrem/Current/Content/ReferenceGuide/Configuring%20Template%20Options.htm) to define enrollment fields for each of the following parameters:
 
-   **SQL Authentication**
-   ```ps
-   $KeyfactorCredentials = Get-Credentials
-   Set-KeyfactorGatewayDatabaseConnection -Server [db server name] -Database [database name] -Account [$KeyfactorCredentials]
-   ```
-## Standard Gateway Configuration Finished
----
+    * **ValidityPeriod** - The desired lifetime time period could be Days, Months or Years. 
+    * **ValidityUnits** - The desired lifetime time value some number indicating days, months or years. 
+    * **RenewalDays** - The window that determines whether it is a renewal vs a re-issue. 
 
 
-## HydrantId AnyGateway Specific Configuration
-It is important to note that importing the HydrantId configuration into the CA Gateway after installing the binaries must be completed. Additionally, the CA Gateway service
-must be running in order to succesfully import the configuation. When the CA Gateway service starts it will attempt to validate the connection information to 
-the CA.  Without the imported configuration, the service will fail to start.
 
-### Binary Installation
+## License
 
-1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/hydrantid-cagateway/releases/)
-2) Gateway Server - Copy the HawkNet.dll, The HydrantIdProxy.dll and the HydrantIdProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+Apache License 2.0, see [LICENSE](LICENSE).
 
-### Configuration Changes
-1) Gateway Server - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
-   ```
-   <alias alias="CAConnector" type="Keyfactor.HydrantId.HydrantIdProxy, HydrantIdProxy"/>
-   ```
-2) Gateway Server - Install the Root HydrantId Certificate that was received from HydrantId
+## Related Integrations
 
-3) Gateway Server - Install the Intermediate HydrantId Certificate that was received from HydrantId
-
-4) Gateway Server - Take the sample Config.json located [Here](https://github.com/Keyfactor/hydrantid-cagateway/raw/main/SampleConfig.json) and make the following modifications
-
-- *Security Settings Modifications* (Swap this out for the typical Gateway Security Settings for Test or Prod)
-
-```
-  "Security": {
-    "KEYFACTOR\\administrator": {
-      "READ": "Allow",
-      "ENROLL": "Allow",
-      "OFFICER": "Allow",
-      "ADMINISTRATOR": "Allow"
-    },
-    "KEYFACTOR\\SVC_AppPool": {
-      "READ": "Allow",
-      "ENROLL": "Allow",
-      "OFFICER": "Allow",
-      "ADMINISTRATOR": "Allow"
-    },
-    "KEYFACTOR\\SVC_TimerService": {
-      "READ": "Allow",
-      "ENROLL": "Allow",
-      "OFFICER": "Allow",
-      "ADMINISTRATOR": "Allow"
-    }
-```
-- *Hydrant Environment Settings* (Modify these with the keys and Urls obtained from HydrantId)
-```
-  "CAConnection": {
-    "HydrantIdBaseUrl": "https://acm-stage.hydrantid.com",
-    "AuthId": "SomeAuthId",
-    "AuthKey": "SomeAuthPassword",
-    "TemplateSync": "On"
-  }
-```
-
-- *Service Settings* (Modify these to be in accordance with Keyfactor Standard Gateway Production Settings)
-```
-  "ServiceSettings": {
-    "ViewIdleMinutes": 1,
-    "FullScanPeriodHours": 1,
-    "PartialScanPeriodMinutes": 1
-  }
-```
-
-5) Gateway Server - Save the newly modified config.json to the following location "C:\Program Files\Keyfactor\Keyfactor AnyGateway"
-
-### Template Installation
-
-The Template section will map the CA's products to an AD template.
-* ```ProductID```
-This is the ID of the HydrantId product to map to the specified template. If you don't know the available product IDs in your Hydrant account, put a placeholder value here and run the Set-KeyfactorGatewayConfig cmdlet according to the AnyGateway documentation. The list of available product IDs will be returned.
-* ```ValidityPeriod```
-REQUIRED: The period to use when requesting certs. It could be, Days, Months, Years depending on the Template.
-* ```ValidityUnits```
-REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 would be 1 year, for days 7 would be 7 days.
-
- ```json
-	"Templates": {
-		"AutoEnrollment - RSA": {
-			"ProductID": "AutoEnrollment - RSA",
-			"Parameters": {
-				"ValidityPeriod": "Years",
-				"ValidityUnits": 1
-			}
-		},
-		"AutoEnrollment - RSA - 7 Day": {
-			"ProductID": "AutoEnrollment - RSA - 7 Day",
-			"Parameters": {
-				"ValidityPeriod": "Days",
-				"ValidityUnits": 7
-			}
-		}
-	}
- ```
-
-### Certificate Authority Installation
-1) Gateway Server - Start the Keyfactor Gateway Service
-2) Run the set Gateway command similar to below
-```ps
-Set-KeyfactorGatewayConfig -LogicalName "HydrantId" -FilePath [path to json file] -PublishAd
-```
-3) Command Server - Import the certificate authority in Keyfactor Portal 
-
-
-***
-
-### License
-[Apache](https://apache.org/licenses/LICENSE-2.0)
-
-
+See all [Keyfactor Any CA Gateways (REST)](https://github.com/orgs/Keyfactor/repositories?q=anycagateway).
