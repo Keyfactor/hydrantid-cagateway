@@ -18,6 +18,8 @@ using System.Diagnostics;
 using Keyfactor.AnyGateway.Extensions;
 using System.Data;
 using Keyfactor.PKI.Enums.EJBCA;
+using Keyfactor.PKI.X509;
+using Keyfactor.HydrantId.Client.Models.Enums;
 
 namespace Keyfactor.Extensions.CAPlugin.HydrantId
 {
@@ -33,7 +35,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             _logger.MethodEntry();
             try
             {
-                certDataReader= certificateDataReader;
+                certDataReader = certificateDataReader;
                 Config = configProvider;
             }
             catch (Exception ex)
@@ -67,8 +69,6 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             HydrantIdCAPluginConfig.Config config = JsonConvert.DeserializeObject<HydrantIdCAPluginConfig.Config>(rawData);
 
             _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdBaseUrl: {config.HydrantIdBaseUrl}");
-            _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdAuthId: {config.HydrantIdAuthId}");
-            _logger.LogTrace($"HydrantIdClientFromCAConnectionData - HydrantIdAuthKey: {config.HydrantIdAuthKey}");
 
             List<string> missingFields = new List<string>();
 
@@ -82,7 +82,7 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             }
 
             _logger.MethodExit();
-             return Ping();
+            return Ping();
         }
 
         public Task ValidateProductInfo(EnrollmentProductInfo productInfo, Dictionary<string, object> connectionInfo)
@@ -145,31 +145,24 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                         if (string.IsNullOrWhiteSpace(fileContent))
                             continue;
 
-                        var certsClean = fileContent
-                            .Replace("\n", string.Empty)
-                            .Split(new[] { "-----END CERTIFICATE-----", "-----BEGIN CERTIFICATE-----" }, StringSplitOptions.RemoveEmptyEntries);
+                        // Extract the end entity certificate using the same logic pattern
+                        var endEntityCert = GetEndEntityCertificate(fileContent);
 
-                        foreach (var certStr in certsClean)
+                        if (!string.IsNullOrEmpty(endEntityCert))
                         {
-                            try
+                            blockingBuffer.Add(new AnyCAPluginCertificate
                             {
-                                var x509Cert = new X509Certificate2(Encoding.ASCII.GetBytes(certStr));
-                                var requestId = $"{item.Id}-{x509Cert.SerialNumber}";
+                                CARequestID = item.Id,
+                                Certificate = endEntityCert,
+                                Status = certStatus,
+                                ProductID = item.Policy.Name
+                            }, cancelToken);
 
-                                blockingBuffer.Add(new AnyCAPluginCertificate
-                                {
-                                    CARequestID = item.Id,
-                                    Certificate = certStr,
-                                    Status = certStatus,
-                                    ProductID = item.Policy.Name
-                                }, cancelToken);
-
-                                _logger.LogTrace($"Processed cert with serial {x509Cert.SerialNumber}");
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError($"Error parsing cert: {ex.Message}, ID: {item.Id}, CN: {item.CommonName}, Serial: {item.Serial}");
-                            }
+                            _logger.LogTrace($"Processed end entity cert for ID {item.Id}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Could not extract end entity certificate for ID {item.Id}");
                         }
                     }
                     catch (Exception certEx)
@@ -191,6 +184,65 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
             {
                 _logger.MethodExit();
             }
+        }
+
+        // Helper method to extract end entity certificate from PEM chain
+        private string GetEndEntityCertificate(string certData)
+        {
+            var splitCerts = certData.Split(
+                new[] { "-----END CERTIFICATE-----", "-----BEGIN CERTIFICATE-----" },
+                StringSplitOptions.RemoveEmptyEntries);
+
+            X509Certificate2Collection col = new X509Certificate2Collection();
+
+            foreach (var cert in splitCerts)
+            {
+                _logger.LogTrace($"Split Cert Value: {cert}");
+                try
+                {
+                    // Clean the cert string and add PEM headers if needed
+                    var cleanCert = cert.Trim();
+                    if (!cleanCert.StartsWith("-----BEGIN CERTIFICATE-----"))
+                    {
+                        cleanCert = $"-----BEGIN CERTIFICATE-----\n{cleanCert}\n-----END CERTIFICATE-----";
+                    }
+                    col.Import(Encoding.UTF8.GetBytes(cleanCert));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Failed to import certificate segment: {ex.Message}");
+                }
+
+            }
+
+            _logger.LogTrace("Getting End Entity Certificate");
+            var currentCert = X509Utilities.ExtractEndEntityCertificateContents(ExportCollectionToPem(col), "");
+
+            _logger.LogTrace("Converting to Byte Array");
+            var byteArray = currentCert?.Export(X509ContentType.Cert);
+
+            _logger.LogTrace("Initializing empty string");
+            var certString = string.Empty;
+            if (byteArray != null)
+            {
+                certString = Convert.ToBase64String(byteArray);
+            }
+
+            _logger.LogTrace($"Got certificate {certString}");
+            return certString;
+        }
+
+        // Helper method to export X509Certificate2Collection to PEM format
+        private string ExportCollectionToPem(X509Certificate2Collection collection)
+        {
+            var sb = new StringBuilder();
+            foreach (var cert in collection)
+            {
+                sb.AppendLine("-----BEGIN CERTIFICATE-----");
+                sb.AppendLine(Convert.ToBase64String(cert.Export(X509ContentType.Cert), Base64FormattingOptions.InsertLineBreaks));
+                sb.AppendLine("-----END CERTIFICATE-----");
+            }
+            return sb.ToString();
         }
 
         public async Task<EnrollmentResult> Enroll(string csr, string subject, Dictionary<string, string[]> san, EnrollmentProductInfo productInfo, RequestFormat requestFormat, EnrollmentType enrollmentType)
@@ -358,12 +410,26 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 var certificateResponse = await client.GetSubmitGetCertificateAsync(certId);
 
                 _logger.LogTrace($"Single Cert JSON: {JsonConvert.SerializeObject(certificateResponse)}");
+
+                // Extract the end entity certificate from the PEM chain
+                var endEntityCert = GetEndEntityCertificate(certificateResponse.Pem);
+
+                if (string.IsNullOrEmpty(endEntityCert))
+                {
+                    _logger.LogWarning($"Could not extract end entity certificate for CARequestID {caRequestID}");
+                    return new AnyCAPluginCertificate
+                    {
+                        CARequestID = caRequestID,
+                        Status = _requestManager.GetMapReturnStatus(RevocationStatusEnum.Failed) // Failed
+                    };
+                }
+
                 _logger.MethodExit();
 
                 return new AnyCAPluginCertificate
                 {
                     CARequestID = caRequestID,
-                    Certificate = certificateResponse.Pem,
+                    Certificate = endEntityCert,  // Now returns the extracted end-entity cert instead of raw PEM
                     Status = _requestManager.GetMapReturnStatus(certificateResponse.RevocationStatus),
                 };
             }

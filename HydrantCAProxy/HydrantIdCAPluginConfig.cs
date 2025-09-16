@@ -58,14 +58,14 @@ namespace Keyfactor.Extensions.CAPlugin.HydrantId
                 [ConfigConstants.HydrantIdAuthId] = new PropertyConfigInfo()
                 {
                     Comments = "The AuthId Obtained from HydrantId.",
-                    Hidden = false,
+                    Hidden = true,
                     DefaultValue = "",
                     Type = "Secret"
                 },
                 [ConfigConstants.HydrantIdAuthKey] = new PropertyConfigInfo()
                 {
                     Comments = "The AuthKey Obtained from HydrantId.",
-                    Hidden = false,
+                    Hidden = true,
                     DefaultValue = "",
                     Type = "Secret"
                 }
