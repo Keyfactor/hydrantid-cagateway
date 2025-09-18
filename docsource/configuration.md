@@ -78,10 +78,10 @@ Behavior:
 - The plugin maps HydrantID Policy Names directly to Product IDs in the Gateway Portal.
 
 Example:
-| GCP CAS Template | Product ID |
+| HID Template | Product ID |
 |:------------------|:-----------|
-| `ServerAuth` | ServerAuth |
-| `ClientAuth` | ClientAuth |
+| `AutoEnrollment - ECDSA` | AutoEnrollment - ECDSA |
+| `AutoEnrollment - RSA - 7 Day` | AutoEnrollment - RSA - 7 Day |
 
 Selecting "Default" bypasses specifying a template.
 
