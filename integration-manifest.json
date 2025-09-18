@@ -1,6 +1,6 @@
 {
     "$schema": "https://keyfactor.github.io/v2/integration-manifest-schema.json",
-    "name": "HydrantId AnyCA REST plugin",
+    "name": "HID Global AnyCA REST plugin",
     "release_dir": "HydrantCAProxy/bin/Release/net6.0",
     "description": "AnyCA Gateway REST plugin that extends HydrantId Certificate Authority Service to Keyfactor Command",
     "status": "production",
