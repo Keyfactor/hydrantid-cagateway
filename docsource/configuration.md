@@ -58,11 +58,6 @@ Each HTTP request dynamically constructs a HAWK header using:
 
 Both the Keyfactor Command and AnyCA Gateway REST servers must trust the root CA, and any applicable intermediate CAs for HydrantID.
 
-Refer to:
-- [Ubuntu - Managing CA certificates](https://ubuntu.com/server/docs/install-a-root-ca-certificate-in-the-trust-store)
-- [RHEL 9 - Using shared system certificates](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/securing_networks/using-shared-system-certificates_securing-networks#using-shared-system-certificates_securing-networks)
-- [Fedora - Using Shared System Certificates](https://docs.fedoraproject.org/en-US/quick-docs/using-shared-system-certificates/)
-
 ---
 
 ## Gateway Registration
