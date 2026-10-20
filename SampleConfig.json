@@ -53,6 +53,13 @@
 				"ValidityPeriod": "Days",
 				"ValidityUnits": 7
 			}
+		},
+		"AutoEnrollment - RSA - 200 Day": {
+			"ProductID": "AutoEnrollment - RSA - 200 Day",
+			"Parameters": {
+				"ValidityPeriod": "Days",
+				"ValidityUnits": 200
+			}
 		}
 	},
 	"CertificateManagers": null,

@@ -143,7 +143,7 @@ This is the ID of the HydrantId product to map to the specified template. If you
 * ```ValidityPeriod```
 REQUIRED: The period to use when requesting certs. It could be, Days, Months, Years depending on the Template.
 * ```ValidityUnits```
-REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 would be 1 year, for days 7 would be 7 days.
+REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 would be 1 year, for days 7 would be 7 days. Must be a positive whole number; shorter-lived certificates such as 200 days are requested with `"ValidityPeriod": "Days"` and `"ValidityUnits": 200`, provided the HydrantId policy allows that validity. Renewals use the validity configured on the HydrantId policy, because the HydrantId renewal API does not accept one.
 
  ```json
 	"Templates": {
@@ -159,6 +159,13 @@ REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 wou
 			"Parameters": {
 				"ValidityPeriod": "Days",
 				"ValidityUnits": 7
+			}
+		},
+		"AutoEnrollment - RSA - 200 Day": {
+			"ProductID": "AutoEnrollment - RSA - 200 Day",
+			"Parameters": {
+				"ValidityPeriod": "Days",
+				"ValidityUnits": 200
 			}
 		}
 	}
