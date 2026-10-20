@@ -1,6 +1,6 @@
 v1.1.4
 - Added flow logging (step diagram at Trace level) for Enroll, Synchronize and Revoke
-- Validity is now validated: ValidityPeriod must be Days, Months or Years and ValidityUnits a positive whole number, so shorter-lived (e.g. 200 day) certificates can be requested
+- Validity is now validated: ValidityPeriod must be Days, Months or Years and ValidityUnits a positive whole number, so shorter-lived (e.g. 200 day) certificates can be requested 
 
 v1.1.3
 - Fixed sync Issue related to API connectivity to Hydrant ID
