@@ -145,7 +145,7 @@ namespace Keyfactor.HydrantId
                         Csr = csr,
                         DnComponents = GetDnComponentsRequest(csr),
                         SubjectAltNames = GetSansRequest(san),
-                        Validity = GetValidity(productInfo.ProductParameters["ValidityPeriod"],Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
+                        Validity = GetValidity(productInfo)
                     };
                 }
 
@@ -154,7 +154,7 @@ namespace Keyfactor.HydrantId
                     Policy = policyId,
                     Csr = csr,
                     DnComponents = GetDnComponentsRequest(csr),
-                    Validity=GetValidity(productInfo.ProductParameters["ValidityPeriod"], Convert.ToInt16(productInfo.ProductParameters["ValidityUnits"]))
+                    Validity=GetValidity(productInfo)
                 };
             }
             catch (Exception e)
@@ -182,25 +182,43 @@ namespace Keyfactor.HydrantId
             }
         }
 
-        private CertRequestBodyValidity GetValidity(string period,int units)
+        /// <summary>
+        /// Builds the requested validity from the ValidityPeriod (Days, Months or Years) and ValidityUnits template
+        /// parameters. Days are passed straight through, so shorter-lived certificates (e.g. 200 days) can be requested.
+        /// </summary>
+        public CertRequestBodyValidity GetValidity(EnrollmentProductInfo productInfo)
         {
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
-                CertRequestBodyValidity validity = new CertRequestBodyValidity();
-                switch(period)
+                var parameters = productInfo?.ProductParameters;
+                if (parameters == null ||
+                    !parameters.TryGetValue("ValidityPeriod", out var period) || string.IsNullOrWhiteSpace(period) ||
+                    !parameters.TryGetValue("ValidityUnits", out var unitsValue) || string.IsNullOrWhiteSpace(unitsValue))
+                    throw new ArgumentException(
+                        "The 'ValidityPeriod' and 'ValidityUnits' template parameters are required.");
+
+                if (!int.TryParse(unitsValue.Trim(), out var units) || units <= 0)
+                    throw new ArgumentException(
+                        $"ValidityUnits '{unitsValue}' is not a positive whole number.");
+
+                var validity = new CertRequestBodyValidity();
+                switch (period.Trim().ToLowerInvariant())
                 {
-                    case "Years":
+                    case "years":
                         validity.Years = units;
                         break;
-                    case "Months":
+                    case "months":
                         validity.Months = units;
                         break;
-                    case "Days":
+                    case "days":
                         validity.Days = units;
                         break;
+                    default:
+                        throw new ArgumentException(
+                            $"ValidityPeriod '{period}' is not supported. Use Days, Months or Years.");
                 }
-                        
+
                 return validity;
             }
             catch (Exception e)
