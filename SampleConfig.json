@@ -23,7 +23,8 @@
 		"HydrantIdBaseUrl": "https://acm-stage.hydrantid.com",
 		"AuthId": "getAuthIdFromHydrant",
 		"AuthKey": "getAuthKeyFromHydrant",
-		"TemplateSync": "On"
+		"TemplateSync": "On",
+		"RenewalWindowDays": 30
 	},
 	"Templates": {
 		"AutoEnrollment - ECDSA": {

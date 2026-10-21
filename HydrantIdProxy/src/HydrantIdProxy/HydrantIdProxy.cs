@@ -42,20 +42,25 @@ namespace Keyfactor.HydrantId
         public HydrantIdClient HydrantIdClient { get; set; }
         public bool EnableTemplateSync { get; set; }
 
+        private const int DefaultRenewalWindowDays = 30;
+        private int RenewalWindowDays { get; set; } = DefaultRenewalWindowDays;
+
         public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
         {
+            using (var flow = new FlowLogger(m => Logger.Trace(m), "Revoke"))
             try
             {
                 Logger.Trace("Staring Revoke Method");
 
-                var hydrantId = caRequestId.Substring(0, 36);
-                var revokeReason = _requestManager.GetMapRevokeReasons(revocationReason);
+                var hydrantId = flow.Step("ResolveCertificateId", () => caRequestId.Substring(0, 36));
+                var revokeReason = flow.Step("MapRevokeReason",
+                    () => _requestManager.GetMapRevokeReasons(revocationReason), $"keyfactorReason={revocationReason}");
 
                 Logger.Trace($"Revoke Reason {revokeReason}");
 
-                var revokeResponse = Task.Run(async () =>
+                var revokeResponse = flow.Step("SubmitRevoke", () => Task.Run(async () =>
                         await HydrantIdClient.GetSubmitRevokeCertificateAsync(hydrantId, revokeReason))
-                    .Result;
+                    .Result, $"certificateId={hydrantId}");
 
                 Logger.Trace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
@@ -83,8 +88,10 @@ namespace Keyfactor.HydrantId
             CancellationToken cancelToken)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+            using (var flow = new FlowLogger(m => Logger.Trace(m), "Synchronize"))
             try
             {
+                var syncedCount = 0;
                 var certs = new BlockingCollection<ICertificatesResponseItem>(100);
                 _ = HydrantIdClient.GetSubmitCertificateListRequestAsync(certs, cancelToken);
 
@@ -137,6 +144,7 @@ namespace Keyfactor.HydrantId
                                                 Status = certStatus,
                                                 ProductID = productId
                                             }, cancelToken);
+                                            syncedCount++;
                                         }
                                         catch (Exception e)
                                         {
@@ -149,14 +157,18 @@ namespace Keyfactor.HydrantId
                     }
                     catch (OperationCanceledException)
                     {
+                        flow.Skip("ProcessCertificates", "canceled");
                         Logger.Error("Synchronize was canceled.");
                         break;
                     }
                 }
+
+                flow.Step("ProcessCertificates", $"certificatesBuffered={syncedCount}");
             }
             catch (AggregateException aggEx)
             {
-                Logger.Error("Csc Global Synchronize Task failed!");
+                flow.Fail("ProcessCertificates", aggEx.GetBaseException().Message);
+                Logger.Error("HydrantId Synchronize Task failed!");
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
                 // ReSharper disable once PossibleIntendedRethrow
                 throw aggEx;
@@ -178,6 +190,18 @@ namespace Keyfactor.HydrantId
             PKIConstants.X509.RequestFormat requestFormat, RequestUtilities.EnrollmentType enrollmentType)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+            using (var flow = new FlowLogger(m => Logger.Trace(m), $"Enroll-{enrollmentType}"))
+            {
+                return EnrollWithFlow(flow, certificateDataReader, csr, san, productInfo, enrollmentType);
+            }
+        }
+
+        private EnrollmentResult EnrollWithFlow(FlowLogger flow, ICertificateDataReader certificateDataReader,
+            string csr, Dictionary<string, string[]> san, EnrollmentProductInfo productInfo,
+            RequestUtilities.EnrollmentType enrollmentType)
+        {
+            enrollmentType = ResolveEnrollmentType(flow, certificateDataReader, productInfo, enrollmentType);
+
             CertRequestResult enrollmentResponse = null;
             int timerTries = 0;
             Certificate csrTrackingResponse=null;
@@ -188,31 +212,36 @@ namespace Keyfactor.HydrantId
                 case RequestUtilities.EnrollmentType.Reissue:
                     Logger.Trace("Entering New Enrollment");
 
-                    var policyListResult =
+                    var policyListResult = flow.Step("GetPolicyList", () =>
                         Task.Run(async () => await HydrantIdClient.GetPolicyList())
-                            .Result;
+                            .Result);
 
                     Logger.Trace($"Policy Result List: {JsonConvert.SerializeObject(policyListResult)}");
-                    var policyId = policyListResult.Single(p => p.Name.Equals(productInfo.ProductID));
+                    var policyId = flow.Step("ResolvePolicy",
+                        () => policyListResult.Single(p => p.Name.Equals(productInfo.ProductID)),
+                        $"product={productInfo.ProductID}");
 
                     Logger.Trace($"PolicyId: {JsonConvert.SerializeObject(policyId)}");
 
-                    var enrollmentRequest =
-                        _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san);
+                    var enrollmentRequest = flow.Step("BuildRequest",
+                        () => _requestManager.GetEnrollmentRequest(policyId.Id, productInfo, csr, san),
+                        DescribeValidity(productInfo));
 
                     Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
-                    enrollmentResponse =
+                    enrollmentResponse = flow.Step("SubmitEnrollment", () =>
                         Task.Run(async () => await HydrantIdClient.GetSubmitEnrollmentAsync(enrollmentRequest))
-                            .Result;
+                            .Result);
                     Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
                         timerTries = +1;
-                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
+                        csrTrackingResponse = flow.Step("WaitForCertificate",
+                            () => GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id));
                     }
                     else
                     {
+                        flow.Fail("SubmitRequest", "HydrantId returned a failure status");
                         return new EnrollmentResult
                         {
                             Status = 30, //failure
@@ -228,12 +257,14 @@ namespace Keyfactor.HydrantId
                 case RequestUtilities.EnrollmentType.Renew:
                     Logger.Trace("Entering Renew...");
 
-                    var renewalRequest = _requestManager.GetRenewalRequest(csr, false);
+                    //The HydrantId renewal API does not accept a validity, the policy's validity applies
+                    var renewalRequest = flow.Step("BuildRequest", () => _requestManager.GetRenewalRequest(csr, false),
+                        "validity comes from the HydrantId policy");
                     Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewalRequest)}");
                     var sn = productInfo.ProductParameters["PriorCertSN"];
                     Logger.Trace($"Prior Cert Serial Number= {sn}");
-                    var priorCert = certificateDataReader.GetCertificateRecord(
-                        DataConversion.HexToBytes(sn));
+                    var priorCert = flow.Step("FindPriorCertificate", () => certificateDataReader.GetCertificateRecord(
+                        DataConversion.HexToBytes(sn)));
 
                     var uUId = priorCert.CARequestID; //uUId is a GUID
 
@@ -241,19 +272,21 @@ namespace Keyfactor.HydrantId
 
                     Logger.Trace($"Reissue CA RequestId: {uUId}");
                     var certificateId = uUId.Substring(0, 36);
-                    enrollmentResponse =
+                    enrollmentResponse = flow.Step("SubmitRenewal", () =>
                         Task.Run(async () =>
                                 await HydrantIdClient.GetSubmitRenewalAsync(certificateId, renewalRequest))
-                            .Result;
+                            .Result, $"certificateId={certificateId}");
                     Logger.Trace($"Renew Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
                     if (enrollmentResponse?.ErrorReturn?.Status != "Failure")
                     {
                         timerTries = +1;
-                        csrTrackingResponse = GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id);
+                        csrTrackingResponse = flow.Step("WaitForCertificate",
+                            () => GetCertificateOnTimer(enrollmentResponse?.RequestStatus?.Id));
                     }
                     else
                     {
+                        flow.Fail("SubmitRequest", "HydrantId returned a failure status");
                         return new EnrollmentResult
                         {
                             Status = 30, //failure
@@ -265,6 +298,7 @@ namespace Keyfactor.HydrantId
 
             if(csrTrackingResponse==null && timerTries>0)
             {
+                flow.Fail("WaitForCertificate", "certificate not available within the wait window");
                 return new EnrollmentResult
                 {
                     Status = 30, //failure
@@ -272,8 +306,61 @@ namespace Keyfactor.HydrantId
                 };
             }
 
-            var cert = GetSingleRecord(csrTrackingResponse.Id.ToString());
-            return _requestManager.GetEnrollmentResult(csrTrackingResponse,cert);
+            var cert = flow.Step("GetIssuedCertificate", () => GetSingleRecord(csrTrackingResponse.Id.ToString()));
+            return flow.Step("BuildResult", () => _requestManager.GetEnrollmentResult(csrTrackingResponse, cert));
+        }
+
+        /// <summary>
+        /// Decides between a new enrollment, a reissue and a renewal when the request carries a prior certificate,
+        /// based on how many days are left on that certificate compared to RenewalWindowDays:
+        /// outside the window = Reissue, inside the window = Renew, already expired = New.
+        /// </summary>
+        private RequestUtilities.EnrollmentType ResolveEnrollmentType(FlowLogger flow,
+            ICertificateDataReader certificateDataReader, EnrollmentProductInfo productInfo,
+            RequestUtilities.EnrollmentType requestedType)
+        {
+            if (requestedType == RequestUtilities.EnrollmentType.Reissue) return requestedType;
+
+            string sn = null;
+            if (productInfo?.ProductParameters == null ||
+                !productInfo.ProductParameters.TryGetValue("PriorCertSN", out sn) ||
+                string.IsNullOrWhiteSpace(sn))
+                return requestedType;
+
+            try
+            {
+                var resolved = flow.Step("ResolveEnrollmentType", () =>
+                {
+                    var priorCert = certificateDataReader.GetCertificateRecord(DataConversion.HexToBytes(sn));
+                    var live = Task.Run(async () =>
+                        await HydrantIdClient.GetSubmitGetCertificateAsync(priorCert.CARequestID.Substring(0, 36))).Result;
+                    if (live?.NotAfter == null)
+                        throw new InvalidOperationException("HydrantId did not return an expiration date.");
+
+                    var daysLeft = (live.NotAfter.Value.ToUniversalTime() - DateTime.UtcNow).TotalDays;
+                    Logger.Trace($"Prior certificate expires {live.NotAfter:o}, {daysLeft:F1} days left, renewal window {RenewalWindowDays} days");
+                    if (daysLeft > RenewalWindowDays) return RequestUtilities.EnrollmentType.Reissue;
+                    return daysLeft > 0
+                        ? RequestUtilities.EnrollmentType.Renew
+                        : RequestUtilities.EnrollmentType.New;
+                }, $"requested={requestedType}, renewalWindowDays={RenewalWindowDays}");
+
+                flow.Step("EnrollmentTypeResolved", $"{requestedType} -> {resolved}");
+                return resolved;
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"Could not resolve the enrollment type from the prior certificate, keeping {requestedType}: {e.Message}");
+                return requestedType;
+            }
+        }
+
+        private static string DescribeValidity(EnrollmentProductInfo productInfo)
+        {
+            if (productInfo?.ProductParameters == null) return null;
+            productInfo.ProductParameters.TryGetValue("ValidityUnits", out var units);
+            productInfo.ProductParameters.TryGetValue("ValidityPeriod", out var period);
+            return $"validity={units} {period}";
         }
 
         private Certificate GetCertificateOnTimer(string Id)
@@ -340,6 +427,15 @@ namespace Keyfactor.HydrantId
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
                 HydrantIdClient = new HydrantIdClient(configProvider);
+
+                if (configProvider.CAConnectionData.TryGetValue("RenewalWindowDays", out var window) &&
+                    window != null)
+                {
+                    if (int.TryParse(window.ToString(), out var days) && days > 0)
+                        RenewalWindowDays = days;
+                    else
+                        Logger.Warn($"RenewalWindowDays '{window}' is not a positive whole number, using {DefaultRenewalWindowDays}.");
+                }
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
             }
             catch (Exception e)

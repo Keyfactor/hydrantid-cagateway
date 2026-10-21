@@ -374,8 +374,6 @@ namespace Keyfactor.HydrantId.Client
                     Algorithm = "sha256"
                 };
 
-                Logger.Trace($"HawkCredential JSON: {JsonConvert.SerializeObject(credentials)}");
-
                 var byteArray = new byte[20];
                 //Generate a cryptographically random set of bytes
                 using (var rnd = RandomNumberGenerator.Create())
@@ -390,8 +388,6 @@ namespace Keyfactor.HydrantId.Client
                     ts.ToString(CultureInfo.InvariantCulture), nOnce, credentials, "header");
                 var authorization =
                     $"id=\"{ApiId}\", ts=\"{ts}\", nonce=\"{nOnce}\", mac=\"{mac}\"";
-
-                Logger.Trace($"Authorization: {authorization}");
 
                 var clientHandler = new WebRequestHandler();
                 var returnClient = new HttpClient(clientHandler, true) {BaseAddress = bUrl};
