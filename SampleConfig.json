@@ -23,7 +23,8 @@
 		"HydrantIdBaseUrl": "https://acm-stage.hydrantid.com",
 		"AuthId": "getAuthIdFromHydrant",
 		"AuthKey": "getAuthKeyFromHydrant",
-		"TemplateSync": "On"
+		"TemplateSync": "On",
+		"RenewalWindowDays": 30
 	},
 	"Templates": {
 		"AutoEnrollment - ECDSA": {
@@ -52,13 +53,6 @@
 			"Parameters": {
 				"ValidityPeriod": "Days",
 				"ValidityUnits": 7
-			}
-		},
-		"AutoEnrollment - RSA - 200 Day": {
-			"ProductID": "AutoEnrollment - RSA - 200 Day",
-			"Parameters": {
-				"ValidityPeriod": "Days",
-				"ValidityUnits": 200
 			}
 		}
 	},

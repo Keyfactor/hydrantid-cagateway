@@ -42,6 +42,9 @@ namespace Keyfactor.HydrantId
         public HydrantIdClient HydrantIdClient { get; set; }
         public bool EnableTemplateSync { get; set; }
 
+        private const int DefaultRenewalWindowDays = 30;
+        private int RenewalWindowDays { get; set; } = DefaultRenewalWindowDays;
+
         public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
         {
             using (var flow = new FlowLogger(m => Logger.Trace(m), "Revoke"))
@@ -197,6 +200,8 @@ namespace Keyfactor.HydrantId
             string csr, Dictionary<string, string[]> san, EnrollmentProductInfo productInfo,
             RequestUtilities.EnrollmentType enrollmentType)
         {
+            enrollmentType = ResolveEnrollmentType(flow, certificateDataReader, productInfo, enrollmentType);
+
             CertRequestResult enrollmentResponse = null;
             int timerTries = 0;
             Certificate csrTrackingResponse=null;
@@ -305,6 +310,51 @@ namespace Keyfactor.HydrantId
             return flow.Step("BuildResult", () => _requestManager.GetEnrollmentResult(csrTrackingResponse, cert));
         }
 
+        /// <summary>
+        /// Decides between a new enrollment, a reissue and a renewal when the request carries a prior certificate,
+        /// based on how many days are left on that certificate compared to RenewalWindowDays:
+        /// outside the window = Reissue, inside the window = Renew, already expired = New.
+        /// </summary>
+        private RequestUtilities.EnrollmentType ResolveEnrollmentType(FlowLogger flow,
+            ICertificateDataReader certificateDataReader, EnrollmentProductInfo productInfo,
+            RequestUtilities.EnrollmentType requestedType)
+        {
+            if (requestedType == RequestUtilities.EnrollmentType.Reissue) return requestedType;
+
+            string sn = null;
+            if (productInfo?.ProductParameters == null ||
+                !productInfo.ProductParameters.TryGetValue("PriorCertSN", out sn) ||
+                string.IsNullOrWhiteSpace(sn))
+                return requestedType;
+
+            try
+            {
+                var resolved = flow.Step("ResolveEnrollmentType", () =>
+                {
+                    var priorCert = certificateDataReader.GetCertificateRecord(DataConversion.HexToBytes(sn));
+                    var live = Task.Run(async () =>
+                        await HydrantIdClient.GetSubmitGetCertificateAsync(priorCert.CARequestID.Substring(0, 36))).Result;
+                    if (live?.NotAfter == null)
+                        throw new InvalidOperationException("HydrantId did not return an expiration date.");
+
+                    var daysLeft = (live.NotAfter.Value.ToUniversalTime() - DateTime.UtcNow).TotalDays;
+                    Logger.Trace($"Prior certificate expires {live.NotAfter:o}, {daysLeft:F1} days left, renewal window {RenewalWindowDays} days");
+                    if (daysLeft > RenewalWindowDays) return RequestUtilities.EnrollmentType.Reissue;
+                    return daysLeft > 0
+                        ? RequestUtilities.EnrollmentType.Renew
+                        : RequestUtilities.EnrollmentType.New;
+                }, $"requested={requestedType}, renewalWindowDays={RenewalWindowDays}");
+
+                flow.Step("EnrollmentTypeResolved", $"{requestedType} -> {resolved}");
+                return resolved;
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"Could not resolve the enrollment type from the prior certificate, keeping {requestedType}: {e.Message}");
+                return requestedType;
+            }
+        }
+
         private static string DescribeValidity(EnrollmentProductInfo productInfo)
         {
             if (productInfo?.ProductParameters == null) return null;
@@ -377,6 +427,15 @@ namespace Keyfactor.HydrantId
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
                 HydrantIdClient = new HydrantIdClient(configProvider);
+
+                if (configProvider.CAConnectionData.TryGetValue("RenewalWindowDays", out var window) &&
+                    window != null)
+                {
+                    if (int.TryParse(window.ToString(), out var days) && days > 0)
+                        RenewalWindowDays = days;
+                    else
+                        Logger.Warn($"RenewalWindowDays '{window}' is not a positive whole number, using {DefaultRenewalWindowDays}.");
+                }
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
             }
             catch (Exception e)
