@@ -120,9 +120,11 @@ the CA.  Without the imported configuration, the service will fail to start.
     "HydrantIdBaseUrl": "https://acm-stage.hydrantid.com",
     "AuthId": "SomeAuthId",
     "AuthKey": "SomeAuthPassword",
-    "TemplateSync": "On"
+    "TemplateSync": "On",
+    "RenewalWindowDays": 30
   }
 ```
+`RenewalWindowDays` (optional, default 30) controls how a request that has a prior certificate is handled, based on the days left on that certificate in HydrantId: more than `RenewalWindowDays` left is a reissue (a new certificate is issued from the policy), inside the window is a renewal, and an already expired certificate is enrolled as new. Requests without a prior certificate are new enrollments.
 
 - *Service Settings* (Modify these to be in accordance with Keyfactor Standard Gateway Production Settings)
 ```
@@ -143,7 +145,7 @@ This is the ID of the HydrantId product to map to the specified template. If you
 * ```ValidityPeriod```
 REQUIRED: The period to use when requesting certs. It could be, Days, Months, Years depending on the Template.
 * ```ValidityUnits```
-REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 would be 1 year, for days 7 would be 7 days.
+REQUIRED: The numeric value corresponding to the ValidityPeriod. For years 1 would be 1 year, for days 7 would be 7 days. Must be a positive whole number. Renewals use the validity configured on the HydrantId policy, because the HydrantId renewal API does not accept one.
 
  ```json
 	"Templates": {
